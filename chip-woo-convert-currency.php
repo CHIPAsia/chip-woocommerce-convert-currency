@@ -43,7 +43,7 @@ class ChipWooConvertCurrency
         $this->set_charge_percent();
         $this->set_charge_fixed_cent();
         
-        add_filter('wc_chip_purchase_products_price', array($this, 'convert_total_value'));
+        add_filter('wc_chip_purchase_products_price', array($this, 'convert_total_value'), 10, 2);
         add_filter('wc_chip_supported_currencies', array($this, 'apply_base_currency'));
         add_filter('wc_chip_purchase_currency', array($this, 'apply_myr_currency'));
         add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
@@ -80,9 +80,9 @@ class ChipWooConvertCurrency
         }
     }
 
-    public function convert_total_value($sub_total)
+    public function convert_total_value($sub_total, $currency)
     {
-        if (get_woocommerce_currency() == 'MYR'){
+        if ($currency == 'MYR'){
           return $sub_total;
         }
         $conversion_rate = $this->get_current_conversion();
