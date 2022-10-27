@@ -126,7 +126,9 @@ class ChipWooConvertCurrency
 
     public function remove_transient()
     {
-      $this->provider->delete_transient();
+      if (is_object($this->provider) AND method_exists($this->provider, 'delete_transient')){
+        $this->provider->delete_transient();
+      }
     }
 
 }
