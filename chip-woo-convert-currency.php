@@ -3,7 +3,7 @@
 /**
  * Plugin Name: CHIP Woo Convert Currency
  * Description: Convert unsupported currency to MYR for CHIP for WooCommerce
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Chip In Sdn Bhd
  * Author URI: https://www.chip-in.asia
 
@@ -42,11 +42,26 @@ class ChipWooConvertCurrency
         $this->set_currency_provider();
         $this->set_charge_percent();
         $this->set_charge_fixed_cent();
+
+        $this->add_repeative_hooks();
         
-        add_filter('wc_chip_purchase_products_price', array($this, 'convert_total_value'), 10, 2);
-        add_filter('wc_chip_supported_currencies', array($this, 'apply_base_currency'));
-        add_filter('wc_chip_purchase_currency', array($this, 'apply_myr_currency'));
         add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
+    }
+
+    private function add_repeative_hooks() {
+      $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4'];
+
+      foreach ( $chip_ids as $chip_id ) {
+        add_filter( "wc_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
+        add_filter( "wc_{$chip_id}_supported_currencies", array($this, 'apply_base_currency'));
+        add_filter( "wc_{$chip_id}_purchase_currency", array($this, 'apply_myr_currency'));
+        add_filter( "wc_{$chip_id}_can_refund_order", array($this, 'can_refund_order'), 10, 3);
+      }
+    }
+
+    public function can_refund_order( $can_refund_order, $order, $gateway )
+    {
+        return false;
     }
 
     public function set_currency_provider()
@@ -80,14 +95,28 @@ class ChipWooConvertCurrency
         }
     }
 
-    public function convert_total_value($sub_total, $currency)
+    public function purchase_parameter($params, $gateway)
     {
-        if ($currency == 'MYR'){
-          return $sub_total;
+        if ( $params['purchase']['currency'] == 'MYR' ) {
+          return $params;
         }
+
         $conversion_rate = $this->get_current_conversion();
-        $total = $sub_total * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent;
-        return round($total);
+
+        for( $i = 0; $i < sizeof( $params['purchase']['products'] ); $i++ ) {
+          $params['purchase']['products'][$i]['price'] = round( $params['purchase']['products'][$i]['price'] * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent );
+        }
+
+        $params['purchase']['total_override'] = round( $params['purchase']['total_override'] * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent );
+
+        $params['purchase']['currency'] = 'MYR';
+
+        return $params;
+    }
+
+    public function apply_myr_currency($currency)
+    {
+        return 'MYR';
     }
 
     public function apply_base_currency($currency)
@@ -100,11 +129,6 @@ class ChipWooConvertCurrency
           array_push($currency, 'MYR');
         }
         return $currency;
-    }
-
-    public function apply_myr_currency($currency)
-    {
-        return 'MYR';
     }
 
     public function get_current_conversion()
