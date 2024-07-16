@@ -86,10 +86,6 @@ class ChipWooConvertCurrency
     
     }
 
-    public function currency_exchange($total) {
-      return '10.00';
-    }
-
     public function can_refund_order( $can_refund_order, $order, $gateway )
     {
         return false;
