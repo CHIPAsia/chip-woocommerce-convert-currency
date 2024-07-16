@@ -74,7 +74,7 @@ class ChipWooConvertCurrency
     }
 
     private function add_repeative_hooks() {
-      $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4'];
+      $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6'];
 
       foreach ( $chip_ids as $chip_id ) {
         add_filter( "wc_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
