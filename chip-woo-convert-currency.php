@@ -3,7 +3,7 @@
 /**
  * Plugin Name: CHIP Woo Convert Currency
  * Description: Convert unsupported currency to MYR for CHIP for WooCommerce
- * Version: 1.0.1
+ * Version: 1.1.0
  * Author: Chip In Sdn Bhd
  * Author URI: https://www.chip-in.asia
 
@@ -13,12 +13,6 @@
  * License: GNU General Public License v3.0
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  */
-
-// define('CHIP_WOO_CC_PROVIDER', 'bnm');
-// define('CHIP_WOO_CC_OER_KEY', '<key-here>');
-// define('CHIP_WOO_CC_CHARGE_PERCENT', 0);
-// define('CHIP_WOO_CC_CHARGE_FIXED_CENT', 0);
-// define('CHIP_WOO_CC_DEFINE_YOUR_OWN', 1);
 
 class ChipWooConvertCurrency
 {
@@ -39,17 +33,48 @@ class ChipWooConvertCurrency
 
     public function __construct()
     {
+        $this->define();
+        $this->includes();
+        $this->actions();
+
         $this->set_currency_provider();
         $this->set_charge_percent();
         $this->set_charge_fixed_cent();
 
         $this->add_repeative_hooks();
-        
         add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
     }
 
+    public function actions() {
+        add_action( 'init', array( $this, 'register_scripts' ) );
+        add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
+    }
+
+    public function define() {
+      define( 'CHIP_WCC_MODULE_VERSION', 'v1.1.0' );
+      define( 'CHIP_WCC_FILE', __FILE__ );
+      define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ));
+      define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ));
+    }
+
+    public function includes() {
+      if ( is_admin() ) {
+        $includes_dir = plugin_dir_path( CHIP_WCC_FILE ) . 'includes/admin/';
+        include $includes_dir . 'currency-settings.php';
+      }
+    }
+
+    public function register_scripts() {
+      wp_register_script(
+        "wcc-admin-settings",
+        trailingslashit( CHIP_WCC_URL ) . 'assets/js/admin/currency-settings.js',
+        array( 'jquery' ),
+        CHIP_WCC_MODULE_VERSION,
+      );
+    }
+
     private function add_repeative_hooks() {
-      $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4'];
+      $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6'];
 
       foreach ( $chip_ids as $chip_id ) {
         add_filter( "wc_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
@@ -57,6 +82,8 @@ class ChipWooConvertCurrency
         add_filter( "wc_{$chip_id}_purchase_currency", array($this, 'apply_myr_currency'));
         add_filter( "wc_{$chip_id}_can_refund_order", array($this, 'can_refund_order'), 10, 3);
       }
+
+    
     }
 
     public function can_refund_order( $can_refund_order, $order, $gateway )
@@ -66,11 +93,11 @@ class ChipWooConvertCurrency
 
     public function set_currency_provider()
     {
-        if (defined('CHIP_WOO_CC_DEFINE_YOUR_OWN')){
+        if (get_option('chip_wcc_options') == 'fixedrate'){
           $this->provider = null;
-        } else if (defined('CHIP_WOO_CC_PROVIDER') AND CHIP_WOO_CC_PROVIDER == 'oer' AND defined('CHIP_WOO_CC_OER_KEY')){
+        } else if (get_option('chip_wcc_options') AND get_option('chip_wcc_options') == 'oer' AND get_option('wcc_oer_key')){
             require_once 'includes/OpenExchangeRate.php';
-            $this->provider = ChipOpenExchangeRate::getInstance(CHIP_WOO_CC_OER_KEY);
+            $this->provider = ChipOpenExchangeRate::getInstance(get_option('wcc_oer_key'));
         } else {
             require_once 'includes/BankNegaraMalaysia.php';
             $this->provider = ChipBNMAPI::getInstance();
@@ -79,8 +106,8 @@ class ChipWooConvertCurrency
 
     public function set_charge_percent()
     {
-        if (defined('CHIP_WOO_CC_CHARGE_PERCENT')){
-          $this->charge_percent = CHIP_WOO_CC_CHARGE_PERCENT / 100.0 + 1.0;
+        if (get_option('wcc_percentage_rate')){
+          $this->charge_percent = get_option('wcc_percentage_rate') / 100.0 + 1.0;
         } else {
           $this->charge_percent = 1;
         }
@@ -88,8 +115,8 @@ class ChipWooConvertCurrency
 
     public function set_charge_fixed_cent()
     {
-        if (defined('CHIP_WOO_CC_CHARGE_FIXED_CENT')){
-          $this->charge_fixed_cent = CHIP_WOO_CC_CHARGE_FIXED_CENT;
+        if (get_option('wcc_fixed_charge')) {
+          $this->charge_fixed_cent = get_option('wcc_fixed_charge');
         } else {
           $this->charge_fixed_cent = 0;
         }
@@ -128,13 +155,14 @@ class ChipWooConvertCurrency
         } elseif (is_null($this->provider)){
           array_push($currency, 'MYR');
         }
+
         return $currency;
     }
 
     public function get_current_conversion()
     {
         if (is_null($this->provider)){
-            return CHIP_WOO_CC_DEFINE_YOUR_OWN;
+            return get_option('wcc_fixed_rate');
         }
 
         $rates = $this->provider->getRates(get_woocommerce_currency());
