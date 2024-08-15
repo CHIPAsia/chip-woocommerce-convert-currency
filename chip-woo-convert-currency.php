@@ -3,12 +3,12 @@
 /**
  * Plugin Name: CHIP Woo Convert Currency
  * Description: Convert unsupported currency to MYR for CHIP for WooCommerce
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Chip In Sdn Bhd
  * Author URI: https://www.chip-in.asia
 
  * WC requires at least: 3.3.4
- * WC tested up to: 7.0.0
+ * WC tested up to: 9.1.4
  *
  * License: GNU General Public License v3.0
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -48,6 +48,19 @@ class ChipWooConvertCurrency
     public function actions() {
         add_action( 'init', array( $this, 'register_scripts' ) );
         add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
+
+        /**
+         * Declare plugin compatibility with WooCommerce HPOS.
+         *
+         */
+        add_action(
+          'before_woocommerce_init',
+              function() {
+                if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+                  \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+                }
+              }
+        );
     }
 
     public function define() {
