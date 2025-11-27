@@ -32,11 +32,20 @@ class ChipBNMAPI
 
             $array_return = json_decode($rates, true);
 
-            foreach ($array_return['data'] as $value) {
-                if (in_array($base, $value)) {
-                    $display = $value;
-                    break;
+            $display = null;
+            if (isset($array_return['data']) && is_array($array_return['data'])) {
+                foreach ($array_return['data'] as $value) {
+                    if (in_array($base, $value)) {
+                        $display = $value;
+                        break;
+                    }
                 }
+            }
+
+            // Validate display data before using it
+            if (!isset($display) || !isset($display['currency_code']) || !isset($display['rate']['selling_rate']) || !isset($display['unit']) || $display['unit'] == 0) {
+                // Return error or default value
+                return false;
             }
 
             $check_rates = array(
