@@ -8,7 +8,7 @@
  * Author URI: https://www.chip-in.asia
 
  * WC requires at least: 3.3.4
- * WC tested up to: 9.1.4
+ * WC tested up to: 10.3
  *
  * License: GNU General Public License v3.0
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
