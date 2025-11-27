@@ -53,9 +53,9 @@ jobs:
         mkdir -p /tmp/wordpress/wp-content/plugins/chip-woo-convert-currency
         rsync -av --exclude='.git' . /tmp/wordpress/wp-content/plugins/chip-woo-convert-currency/
     
-    - name: Install and activate CHIP Woo Convert Currency
+    - name: Install and activate CHIP for WooCommerce
       run: |
-        wp plugin install chip-woo-convert-currency --activate --path=/tmp/wordpress
+        wp plugin install chip-for-woocommerce --activate --path=/tmp/wordpress
 
     - name: Test plugin activation
       run: |
