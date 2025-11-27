@@ -1,0 +1,62 @@
+name: Plugin Activation Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  activation-test:
+    name: Test Plugin Activation
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mariadb:latest
+        ports:
+          - '3306:3306'
+        env:
+          MYSQL_ROOT_PASSWORD: wordpress
+          MARIADB_INITDB_SKIP_TZINFO: 1
+          MYSQL_USER: wordpress
+          MYSQL_PASSWORD: wordpress
+          MYSQL_DATABASE: wordpress_test
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        coverage: none
+        php-version: "8.2"
+
+    - name: Install PHP Dependencies
+      uses: ramsey/composer-install@v3
+
+    - name: Install Subversion (SVN)
+      run: sudo apt-get install -y subversion
+
+    - name: Set up WordPress and WordPress Test Library
+      uses: sjinks/setup-wordpress-test-library@master
+      with:
+        version: latest
+    
+    - name: Install WP-CLI
+      run: |
+        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+        chmod +x wp-cli.phar
+        sudo mv wp-cli.phar /usr/local/bin/wp
+        wp config create --force --dbname=wordpress_test --dbuser=wordpress --dbpass=wordpress --dbhost=127.0.0.1 --path=/tmp/wordpress
+        wp core install --url=http://localhost --title=test --admin_user=wzul --admin_email=wzul@test.com --path=/tmp/wordpress
+    - name: Copy plugin to WordPress
+      run: |
+        mkdir -p /tmp/wordpress/wp-content/plugins/chip-woo-convert-currency
+        rsync -av --exclude='.git' . /tmp/wordpress/wp-content/plugins/chip-woo-convert-currency/
+    
+    - name: Install and activate CHIP Woo Convert Currency
+      run: |
+        wp plugin install chip-woo-convert-currency --activate --path=/tmp/wordpress
+
+    - name: Test plugin activation
+      run: |
+        wp plugin activate chip-woo-convert-currency --path=/tmp/wordpress

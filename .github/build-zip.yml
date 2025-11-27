@@ -1,0 +1,30 @@
+name: Build release zip
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Build release zip
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Generate zip
+      run: |
+        # Create zip file using git archive which automatically respects .gitignore
+        git archive --format=zip --output=chip-for-fluentcart.zip HEAD
+        
+        echo "✅ Created chip-for-fluentcart.zip"
+        ls -lh chip-for-fluentcart.zip
+
+    - name: Upload zip artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: chip-for-fluentcart
+        path: chip-for-fluentcart.zip
+        retention-days: 5
