@@ -1,0 +1,15 @@
+= 1.2.0 2025-11-27 =
+
+* Fix - Fix minor error
+
+= 1.1.1 2024-08-15 =
+
+* Added - Declare HPOS support
+
+= 1.1.0 2024-07-17 =
+
+* Added - User Interface for setting up currency conversion
+
+= 1.0.0 2022-10-25 =
+
+* Added - Initial release.
