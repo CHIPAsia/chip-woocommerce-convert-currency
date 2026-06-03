@@ -15,7 +15,7 @@ However, you may opt to define your own conversion rate instead of using the aut
 
 By default, the plugin will work as-is upon activation. However, you may tweak the configuration to fit your business needs. The configuration is available in **WooCommerce → Settings → General → CHIP Convert Currency API Options**.
 
-Alternatively, you may configure it directly in `chip-woo-convert-currency.php` using PHP `define()` constants.
+All configuration is managed through the WooCommerce settings page.
 
 ### Configure your preferred provider
 
