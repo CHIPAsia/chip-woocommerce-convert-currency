@@ -8,4 +8,10 @@ vendor/
 composer.lock
 .phpunit.result.cache
 
+# Plugin Check generates temporary files
+.wp-env.json
+.ci/
+ci-build/
+dist/
+
 test_stub.php

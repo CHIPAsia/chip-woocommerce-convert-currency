@@ -13,30 +13,19 @@ However, you may opt to define your own conversion rate instead of using the aut
 
 ## Configuration
 
-By default, the plugin will work as-is upon activation. However, you may tweak the configuration to fit your business needs. The configuration is defined using PHP `define()` constants which you can store in the **wp-config.php** file. Alternatively, you may configure it directly in `chip-woo-convert-currency.php`.
+By default, the plugin will work as-is upon activation. However, you may tweak the configuration to fit your business needs. The configuration is available in **WooCommerce → Settings → General → CHIP Convert Currency API Options**.
 
+Alternatively, you may configure it directly in `chip-woo-convert-currency.php` using PHP `define()` constants.
 
-### Configure your own exchange rate
-
-You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.
-
-```php
-define('CHIP_WOO_CC_DEFINE_YOUR_OWN', 3.32);
-```
-
-### Configure your preferred providers
+### Configure your preferred provider
 
 By default, the plugin is set to fetch the information from Bank Negara Malaysia API. However, you may change to your preferred providers if any.
 
-```php
-define('CHIP_WOO_CC_PROVIDER', 'bnm'); // possible values: bnm, oer
-```
-
-Note: if you are using Open Exchange Rate, you need to set the key for the exchange to work.
-
-```php
-define('CHIP_WOO_CC_OER_KEY', '<open-exchange-rate-key>');
-```
+| Setting | Description |
+|---------|-------------|
+| **API Options** | Choose between BNM (default), Open Exchange Rate API, or Fixed Rate. |
+| **Open Exchange Rate API Key** | Required only if you select OER as the provider. |
+| **Fixed Exchange Rate** | Enter your own rate. Used only when "Fixed Rate" is selected. |
 
 ### Configure additional charge for currency conversion
 
@@ -44,17 +33,10 @@ Since the conversion of currency will require conversion back to the merchant's 
 
 **The charge calculations are added after conversion is done**.
 
-#### Add percentage charge
-
-```php
-define('CHIP_WOO_CC_CHARGE_PERCENT', 0); // 0 Percent
-```
-
-#### Add fixed charge
-
-```php
-define('CHIP_WOO_CC_CHARGE_FIXED_CENT', 0); // 0 Cent
-```
+| Setting | Description |
+|---------|-------------|
+| **Percentage Charge** | Percentage added after conversion (e.g., `5` = 5%). |
+| **Fixed Charge (cent in MYR)** | Fixed amount in cents added after conversion. |
 
 ## Supported currencies
 
@@ -85,6 +67,10 @@ add_filter('wc_chip_currency_provider_refresh_minutes', function($minutes){ retu
 ## Error Handling
 
 If the plugin fails to retrieve the conversion rate from the API provider, the Checkout is expected to error, thus preventing the buyer from making payment. This is by design to ensure the order amount is not miscalculated and the buyer does not pay the wrong amount for an order.
+
+## No Refund Support
+
+**Important:** This plugin disables automatic refunds for all orders processed through CHIP gateways. Because the order total is converted from the original currency to MYR, refunding the original amount would result in an incorrect refund value. Refunds must be handled manually through your CHIP merchant dashboard.
 
 ## Full Disclaimer
 
