@@ -9,11 +9,11 @@ Currently, the plugin has been integrated with Bank Negara Malaysia (BNM) and Op
 - [Bank Negara Malaysia API](https://apikijangportal.bnm.gov.my/openapi)
 - [Open Exchange Rate](http://openexchangerates.org)
 
-However, you may opt to define your own conversion rate instead of using the automated currency exchange rate
+However, you may opt to define your own conversion rate instead of using the automated currency exchange rate.
 
 ## Configuration
 
-By default, the plugin will work as-is upon activation. However, you may tweak the configuration to fit your business needs. The configuration is made using PHP define where you can store the value in **wp-config.php** file. Alternatively, you may configure it on chip-woo-convert-currency.php.
+By default, the plugin will work as-is upon activation. However, you may tweak the configuration to fit your business needs. The configuration is defined using PHP `define()` constants which you can store in the **wp-config.php** file. Alternatively, you may configure it directly in `chip-woo-convert-currency.php`.
 
 
 ### Configure your own exchange rate
@@ -32,7 +32,7 @@ By default, the plugin is set to fetch the information from Bank Negara Malaysia
 define('CHIP_WOO_CC_PROVIDER', 'bnm'); // possible values: bnm, oer
 ```
 
-Note: if you are using Open Exchange Rate, you need to set the key for the exchange to work
+Note: if you are using Open Exchange Rate, you need to set the key for the exchange to work.
 
 ```php
 define('CHIP_WOO_CC_OER_KEY', '<open-exchange-rate-key>');
@@ -40,7 +40,7 @@ define('CHIP_WOO_CC_OER_KEY', '<open-exchange-rate-key>');
 
 ### Configure additional charge for currency conversion
 
-Since the conversion of currency will require conversion back to the merchant's home currency, you may specify an additional charge for the currency conversion. This is an important configuration since merchant who are reporting in USD, receiving in MYR will required to convert it back to USD.
+Since the conversion of currency will require conversion back to the merchant's home currency, you may specify an additional charge for the currency conversion. This is an important configuration since merchants who report in USD but receive in MYR will need to convert it back to USD.
 
 **The charge calculations are added after conversion is done**.
 
@@ -72,7 +72,7 @@ JPY, AED, AUD, BND, CAD, CHF, CNY, EGP, EUR, GBP, HKD, IDR, INR, KHR, KRW, MMK, 
 AED, AFN, ALL, AMD, ANG, AOA, ARS, AUD, AWG, AZN, BAM, BBD, BDT, BGN, BHD, BIF, BMD, BND, BOB, BRL, BSD, BTC, BTN, BWP, BYN, BZD, CAD, CDF, CHF, CLF, CLP, CNH, CNY, COP, CRC, CUC, CUP, CVE, CZK, DJF, DKK, DOP, DZD, EGP, ERN, ETB, EUR, FJD, FKP, GBP, GEL, GGP, GHS, GIP, GMD, GNF, GTQ, GYD, HKD, HNL, HRK, HTG, HUF, IDR, ILS, IMP, INR, IQD, IRR, ISK, JEP, JMD, JOD, JPY, KES, KGS, KHR, KMF, KPW, KRW, KWD, KYD, KZT, LAK, LBP, LKR, LRD, LSL, LYD, MAD, MDL, MGA, MKD, MMK, MNT, MOP, MRU, MUR, MVR, MWK, MXN, MYR, MZN, NAD, NGN, NIO, NOK, NPR, NZD, OMR, PAB, PEN, PGK, PHP, PKR, PLN, PYG, QAR, RON, RSD, RUB, RWF, SAR, SBD, SCR, SDG, SEK, SGD, SHP, SLL, SOS, SRD, SSP, STD, STN, SVC, SYP, SZL, THB, TJS, TMT, TND, TOP, TRY, TTD, TWD, TZS, UAH, UGX, USD, UYU, UZS, VES, VND, VUV, WST, XAF, XAG, XAU, XCD, XDR, XOF, XPD, XPF, XPT, YER, ZAR, ZMW, ZWL
 ```
 
-## Advance Configuration
+## Advanced Configuration
 
 ### Exchange rate cache
 

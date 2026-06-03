@@ -4,6 +4,7 @@ class ChipOpenExchangeRate
 {
 
     private static $instance = null;
+    private $app_id;
 
     public static function getInstance($oer_key)
     {

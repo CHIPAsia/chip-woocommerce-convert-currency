@@ -68,10 +68,10 @@ class ChipWooConvertCurrency
     }
 
     public function define() {
-      define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.0' );
-      define( 'CHIP_WCC_FILE', __FILE__ );
-      define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ));
-      define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ));
+      defined( 'CHIP_WCC_MODULE_VERSION' ) || define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.0' );
+      defined( 'CHIP_WCC_FILE' )          || define( 'CHIP_WCC_FILE', __FILE__ );
+      defined( 'CHIP_WCC_BASENAME' )      || define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ) );
+      defined( 'CHIP_WCC_URL' )            || define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ) );
     }
 
     public function includes() {
@@ -131,7 +131,7 @@ class ChipWooConvertCurrency
     {
         if (get_option('chip_wcc_options') == 'fixedrate'){
           $this->provider = null;
-        } else if (get_option('chip_wcc_options') AND get_option('chip_wcc_options') == 'oer' AND get_option('wcc_oer_key')){
+        } else if (get_option('chip_wcc_options') && get_option('chip_wcc_options') == 'oer' && get_option('wcc_oer_key')){
             require_once 'includes/OpenExchangeRate.php';
             $this->provider = ChipOpenExchangeRate::getInstance(get_option('wcc_oer_key'));
         } else {

@@ -4,4 +4,8 @@ package-lock.json
 yarn.lock
 /node_modules/
 
+vendor/
+composer.lock
+.phpunit.result.cache
+
 test_stub.php

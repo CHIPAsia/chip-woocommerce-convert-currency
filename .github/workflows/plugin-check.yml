@@ -41,9 +41,55 @@ jobs:
 
       - name: Check PHP ${{ matrix.php-version }} Compatibility
         run: |
-          phpcs --standard=PHPCompatibilityWP --runtime-set testVersion ${{ matrix.php-version }} --extensions=php --ignore=vendor,node_modules .
+          phpcs --standard=PHPCompatibilityWP --runtime-set testVersion ${{ matrix.php-version }} --extensions=php --ignore=vendor,node_modules,tests .
 
-  # ─── Tier 2: Prepare plugin artifact ───
+  # ─── Tier 2: PHPCS (WordPress Standards) ───
+
+  phpcs:
+    name: PHP CodeSniffer (WordPress Standards)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v4
+
+      - name: Verify PHPCS Standards
+        run: vendor/bin/phpcs -i
+
+      - name: Run PHPCS
+        run: vendor/bin/phpcs --standard=phpcs.xml .
+        continue-on-error: true
+        # TODO: The legacy codebase has ~790 WPCS violations. A dedicated cleanup PR is needed.
+
+  # ─── Tier 3: PHPUnit ───
+
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: phpunit
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v4
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+
+  # ─── Tier 4: Prepare plugin artifact ───
 
   prepare-plugin:
     name: Prepare Plugin
@@ -65,12 +111,12 @@ jobs:
           path: ci-build/
           retention-days: 5
 
-  # ─── Tier 3: Plugin Check (needs artifact) ───
+  # ─── Tier 5: Plugin Check (needs all above + artifact) ───
 
   plugin-check:
     name: Plugin Check
     runs-on: ubuntu-latest
-    needs: [php-compatibility, prepare-plugin]
+    needs: [php-compatibility, phpcs, phpunit, prepare-plugin]
 
     steps:
       - name: Download plugin artifact

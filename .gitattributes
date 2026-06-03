@@ -23,6 +23,8 @@ README.md export-ignore
 CLAUDE.md export-ignore
 resources/ export-ignore
 scripts/ export-ignore
+phpunit.xml.dist export-ignore
+phpcs.xml export-ignore
 
 # Binary files
 *.png binary
