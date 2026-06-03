@@ -1,10 +1,10 @@
 # CHIP WooCommerce Convert Currency
 
-This plugins add capability for CHIP for WooCommerce to convert total amount made in any currency to Malaysian Ringgit (MYR).
+This plugin adds capability for CHIP for WooCommerce to convert total amount made in any currency to Malaysian Ringgit (MYR).
 
 ## Integrated Providers
 
-Currently, the plugin have been integrated with Bank Negara Malaysia (BNM) and Open Exchange Rate (OER) to automate the currency conversion process. The default provider is BNM API. Please do write to us if you need to integrate with other providers.
+Currently, the plugin has been integrated with Bank Negara Malaysia (BNM) and Open Exchange Rate (OER) to automate the currency conversion process. The default provider is BNM API. Please do write to us if you need to integrate with other providers.
 
 - [Bank Negara Malaysia API](https://apikijangportal.bnm.gov.my/openapi)
 - [Open Exchange Rate](http://openexchangerates.org)
@@ -15,9 +15,10 @@ However, you may opt to define your own conversion rate instead of using the aut
 
 By default, the plugin will work as-is upon activation. However, you may tweak the configuration to fit your business needs. The configuration is made using PHP define where you can store the value in **wp-config.php** file. Alternatively, you may configure it on chip-woo-convert-currency.php.
 
+
 ### Configure your own exchange rate
 
-You may use your own exchange rate instead of automated from API providers. By setting this option, the plugin will not fetch exchange rate from API providers.
+You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.
 
 ```php
 define('CHIP_WOO_CC_DEFINE_YOUR_OWN', 3.32);
@@ -39,9 +40,9 @@ define('CHIP_WOO_CC_OER_KEY', '<open-exchange-rate-key>');
 
 ### Configure additional charge for currency conversion
 
-Since the conversion of currency will require conversion back to merchant home currency, you may specifiy additional charge for the currency conversion. This is an important configuration since merchant who are reporting in USD, receiving in MYR will required to convert it back to USD.
+Since the conversion of currency will require conversion back to the merchant's home currency, you may specify an additional charge for the currency conversion. This is an important configuration since merchant who are reporting in USD, receiving in MYR will required to convert it back to USD.
 
-**The charge calculation are added after conversion is done**.
+**The charge calculations are added after conversion is done**.
 
 #### Add percentage charge
 
@@ -57,7 +58,7 @@ define('CHIP_WOO_CC_CHARGE_FIXED_CENT', 0); // 0 Cent
 
 ## Supported currencies
 
-Kindly note that different providers do support different currencies. You need to check if the currencies that you are using is supported by the providers you choose. You are safe to ignore the list if you choose to define your own conversion rate.
+Kindly note that different providers do support different currencies. You need to check if the currencies that you are using are supported by the providers you choose. You are safe to ignore the list if you choose to define your own conversion rate.
 
 ### BNM Supported Currencies
 
@@ -75,7 +76,7 @@ AED, AFN, ALL, AMD, ANG, AOA, ARS, AUD, AWG, AZN, BAM, BBD, BDT, BGN, BHD, BIF, 
 
 ### Exchange rate cache
 
-By default, the currency conversion rate is cached and will be only retrieved in every 30 minutes. You may override this behavior by adding filter **wc_chip_currency_provider_refresh_minutes**. Example code will make the interval changed to every hour.
+By default, the currency conversion rate is cached and will only be retrieved every 30 minutes. You may override this behavior by adding the filter **wc_chip_currency_provider_refresh_minutes**. Example code will change the interval to every hour.
 
 ```php
 add_filter('wc_chip_currency_provider_refresh_minutes', function($minutes){ return 60 });
@@ -83,7 +84,7 @@ add_filter('wc_chip_currency_provider_refresh_minutes', function($minutes){ retu
 
 ## Error Handling
 
-In the event of the plugin failed to retrieve the conversion rate from API provider, it is expected for the Checkout to error and thus preventing the buyer from making payment. This is by-design to ensure the order amount is didn't wrongly calculated and the buyer didn't pay wrong amount for an order.
+If the plugin fails to retrieve the conversion rate from the API provider, the Checkout is expected to error, thus preventing the buyer from making payment. This is by design to ensure the order amount is not miscalculated and the buyer does not pay the wrong amount for an order.
 
 ## Full Disclaimer
 

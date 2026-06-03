@@ -20,7 +20,9 @@ webpack.config.js export-ignore
 .eslintrc export-ignore
 .prettierrc export-ignore
 README.md export-ignore
+CLAUDE.md export-ignore
 resources/ export-ignore
+scripts/ export-ignore
 
 # Binary files
 *.png binary

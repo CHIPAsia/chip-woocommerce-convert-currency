@@ -1,0 +1,86 @@
+name: WordPress Plugin Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Tier 1: PHP compatibility ───
+
+  php-compatibility:
+    name: PHP ${{ matrix.php-version }} Compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.4', '8.0', '8.2', '8.4']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+
+      - name: Install PHPCompatibility
+        run: |
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --dev squizlabs/php_codesniffer dealerdirect/phpcodesniffer-composer-installer phpcompatibility/phpcompatibility-wp:"*"
+          echo "$(composer global config bin-dir --absolute)" >> $GITHUB_PATH
+
+      - name: Verify PHPCS Standards
+        run: phpcs -i
+
+      - name: Check PHP ${{ matrix.php-version }} Compatibility
+        run: |
+          phpcs --standard=PHPCompatibilityWP --runtime-set testVersion ${{ matrix.php-version }} --extensions=php --ignore=vendor,node_modules .
+
+  # ─── Tier 2: Prepare plugin artifact ───
+
+  prepare-plugin:
+    name: Prepare Plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Prepare plugin directory
+        run: |
+          mkdir -p ci-build/chip-woo-convert-currency
+          git archive HEAD | tar -x -C ci-build/chip-woo-convert-currency
+          echo "✅ Plugin prepared for check"
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: chip-woo-convert-currency-build
+          path: ci-build/
+          retention-days: 5
+
+  # ─── Tier 3: Plugin Check (needs artifact) ───
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    needs: [php-compatibility, prepare-plugin]
+
+    steps:
+      - name: Download plugin artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: chip-woo-convert-currency-build
+          path: ./build
+
+      - name: Run Plugin Check
+        uses: wordpress/plugin-check-action@v1
+        with:
+          build-dir: './build/chip-woo-convert-currency'
+          exclude-directories: 'vendor,node_modules'

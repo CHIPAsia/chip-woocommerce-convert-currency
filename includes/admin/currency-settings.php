@@ -42,12 +42,12 @@ class CurrencySettings {
             array(
                 'title' => __( 'CHIP Convert Currency API Options', 'woocommerce' ),
                 'type'  => 'title',
-                'desc'  => __( 'The following options convert the base currency to MYR for CHIP purpose', 'woocommerce' ),
+                'desc'  => __( 'The following options convert the base currency to MYR for CHIP purposes', 'woocommerce' ),
                 'id'    => 'wcc_api_options',
             ),
             array(
                 'title'    => __( 'API Options', 'woocommerce' ),
-                'desc'     => __( 'Configure your preferred providers, Default : BNM', 'woocommerce' ),
+                'desc'     => __( 'Configure your preferred providers. Default: BNM', 'woocommerce' ),
                 'id'       => 'chip_wcc_options',
                 'default'  => 'bnm',
                 'type'     => 'select',
@@ -66,7 +66,7 @@ class CurrencySettings {
             ),
             array(
                 'title'   => __( 'Fixed Exchange Rate', 'woocommerce' ),
-                'desc'    => __( 'You may use your own exchange rate instead of automated from API providers. By setting this option, the plugin will not fetch exchange rate from API providers.', 'woocommerce' ),
+                'desc'    => __( 'You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.', 'woocommerce' ),
                 'id'      => 'wcc_fixed_rate',
                 'css'     => 'min-width: 50px;',
                 'default' => '',

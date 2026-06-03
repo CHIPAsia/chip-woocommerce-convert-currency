@@ -2,13 +2,17 @@
 
 /**
  * Plugin Name: CHIP Woo Convert Currency
+ * Plugin URI: https://wordpress.org/plugins/chip-woo-convert-currency/
  * Description: Convert unsupported currency to MYR for CHIP for WooCommerce
- * Version: 1.1.1
+ * Version: 1.3.0
  * Author: Chip In Sdn Bhd
- * Author URI: https://www.chip-in.asia
-
- * WC requires at least: 3.3.4
- * WC tested up to: 10.3
+ * Author URI: https://chip-in.asia
+ * Requires PHP: 7.4
+ * Requires at least: 6.3
+ *
+ * WC requires at least: 5.1
+ * WC tested up to: 10.8
+ * Requires Plugins: woocommerce
  *
  * License: GNU General Public License v3.0
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -41,7 +45,7 @@ class ChipWooConvertCurrency
         $this->set_charge_percent();
         $this->set_charge_fixed_cent();
 
-        $this->add_repeative_hooks();
+        $this->add_repetitive_hooks();
         add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
     }
 
@@ -64,7 +68,7 @@ class ChipWooConvertCurrency
     }
 
     public function define() {
-      define( 'CHIP_WCC_MODULE_VERSION', 'v1.1.0' );
+      define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.0' );
       define( 'CHIP_WCC_FILE', __FILE__ );
       define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ));
       define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ));
@@ -86,22 +90,41 @@ class ChipWooConvertCurrency
       );
     }
 
-    private function add_repeative_hooks() {
+    private function add_repetitive_hooks() {
       $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6'];
 
       foreach ( $chip_ids as $chip_id ) {
+        // Legacy wc_ prefixed hooks for v1.x backward compatibility
         add_filter( "wc_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
         add_filter( "wc_{$chip_id}_supported_currencies", array($this, 'apply_base_currency'));
         add_filter( "wc_{$chip_id}_purchase_currency", array($this, 'apply_myr_currency'));
         add_filter( "wc_{$chip_id}_can_refund_order", array($this, 'can_refund_order'), 10, 3);
+
+        // New chip_ prefixed hooks for v2.x compatibility
+        add_filter( "chip_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
+        add_filter( "chip_{$chip_id}_supported_currencies", array($this, 'apply_base_currency'));
+        add_filter( "chip_{$chip_id}_purchase_currency", array($this, 'apply_myr_currency'));
+        add_filter( "chip_{$chip_id}_can_refund_order", array($this, 'can_refund_order'), 10, 3);
       }
 
-    
+      // WooCommerce Blocks: inject supported currencies so canMakePayment doesn't hide the gateway
+      add_filter( 'chip_blocks_payment_method_data', array($this, 'blocks_payment_method_data'), 10, 3 );
     }
 
     public function can_refund_order( $can_refund_order, $order, $gateway )
     {
         return false;
+    }
+
+    public function blocks_payment_method_data( $payment_method_data, $name, $gateway )
+    {
+        $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6'];
+
+        if ( in_array( $name, $chip_ids, true ) ) {
+            $payment_method_data['supported_currencies'] = $this->apply_base_currency( array( 'MYR' ) );
+        }
+
+        return $payment_method_data;
     }
 
     public function set_currency_provider()
@@ -191,7 +214,7 @@ class ChipWooConvertCurrency
 
     public function remove_transient()
     {
-      if (is_object($this->provider) AND method_exists($this->provider, 'delete_transient')){
+      if (is_object($this->provider) && method_exists($this->provider, 'delete_transient')){
         $this->provider->delete_transient();
       }
     }

@@ -23,7 +23,7 @@ class ChipOpenExchangeRate
 
     public function getRates($woocommerce_currency)
     {
-        if (false === ($rates = get_transient('wc_chip_amount_amount_converter_oer'))) {
+        if (false === ($rates = get_transient('wc_chip_amount_converter_oer'))) {
             $base = $woocommerce_currency;
             $query = http_build_query($this->getQueryParams($base));
             $rates = wp_remote_retrieve_body(wp_safe_remote_get(self::URL . "?{$query}"));
@@ -34,7 +34,7 @@ class ChipOpenExchangeRate
                 // Do nothing
             } else {
                 $transient_timeout = apply_filters( 'wc_chip_currency_provider_refresh_minutes', 30 );
-                set_transient('wc_chip_amount_amount_converter_oer', $rates, MINUTE_IN_SECONDS * $transient_timeout);
+                set_transient('wc_chip_amount_converter_oer', $rates, MINUTE_IN_SECONDS * $transient_timeout);
             }
         }
         return $rates;
@@ -51,6 +51,6 @@ class ChipOpenExchangeRate
 
     public function delete_transient()
     {
-        delete_transient('wc_chip_amount_amount_converter_oer');
+        delete_transient('wc_chip_amount_converter_oer');
     }
 }

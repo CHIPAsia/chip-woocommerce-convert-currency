@@ -2,8 +2,8 @@
 Contributors: chipasia
 Tags: chip
 Requires at least: 6.3
-Tested up to: 6.8
-Stable tag: 1.2.0
+Tested up to: 7.0
+Stable tag: 1.3.0
 Requires PHP: 7.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -18,9 +18,10 @@ Convert unsupported currency to MYR for CHIP for WooCommerce.
 
 == Changelog ==
 
-= 1.2.0 2025-11-27 =
+= 1.3.0 2026-06-03 =
 
-* Fix - Fix minor error
+* Added - Support for v2.x gateway hooks with chip_ prefix
+* Added - WooCommerce Blocks compatibility for currency conversion
 
 [See changelog for all versions](https://raw.githubusercontent.com/CHIPAsia/chip-woocommerce-convert-currency/main/changelog.txt).
 
@@ -35,7 +36,7 @@ Convert unsupported currency to MYR for CHIP for WooCommerce.
 
 Automatic installation is the easiest option -- WordPress will handle the file transfer, and you won’t need to leave your web browser. To do an automatic install of WooCommerce, log in to your WordPress dashboard, navigate to the Plugins menu, and click “Add New.”
 
-In the search field type “CHIP Woo Convert Currency,” then click “Search Plugins.” Once you’ve found us,  you can view details about it such as the point release, rating, and description. Most importantly of course, you can install it by! Click “Install Now,” and WordPress will take it from there.
+In the search field type “CHIP Woo Convert Currency,” then click “Search Plugins.” Once you’ve found us,  you can view details about it such as the point release, rating, and description. Most importantly of course, you can install it by clicking! Click “Install Now,” and WordPress will take it from there.
 
 = Manual installation =
 
