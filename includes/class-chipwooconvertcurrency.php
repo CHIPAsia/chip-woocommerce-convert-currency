@@ -189,7 +189,7 @@ class ChipWooConvertCurrency {
 	 * @param WC_Payment_Gateway $gateway     Payment gateway instance.
 	 * @return bool
 	 */
-	public function can_refund_order( $can_refund_order, $order, $gateway ) {
+	public function can_refund_order( $can_refund_order, $order, $gateway ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 		return false;
 	}
 
@@ -202,7 +202,7 @@ class ChipWooConvertCurrency {
 	 * @param object $gateway             Gateway instance.
 	 * @return array
 	 */
-	public function blocks_payment_method_data( $payment_method_data, $name, $gateway ) {
+	public function blocks_payment_method_data( $payment_method_data, $name, $gateway ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 		$chip_ids = array( 'wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6' );
 
 		if ( in_array( $name, $chip_ids, true ) ) {
@@ -273,7 +273,7 @@ class ChipWooConvertCurrency {
 	 * @return array
 	 * @throws Exception If conversion rate cannot be retrieved.
 	 */
-	public function purchase_parameter( $params, $gateway ) {
+	public function purchase_parameter( $params, $gateway ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 		if ( 'MYR' === $params['purchase']['currency'] ) {
 			return $params;
 		}
@@ -299,7 +299,7 @@ class ChipWooConvertCurrency {
 	 * @param string $currency Current currency.
 	 * @return string
 	 */
-	public function apply_myr_currency( $currency ) {
+	public function apply_myr_currency( $currency ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 		return 'MYR';
 	}
 
