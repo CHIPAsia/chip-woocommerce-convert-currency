@@ -271,6 +271,55 @@ if ( ! function_exists( 'apply_filters' ) ) {
 	}
 }
 
+if ( ! function_exists( 'esc_html__' ) ) {
+	/**
+	 * Stub for esc_html__().
+	 *
+	 * @param string $text   Text to translate.
+	 * @param string $domain Text domain.
+	 * @return string
+	 */
+	function esc_html__( $text, $domain = 'default' ) {
+		return $text;
+	}
+}
+
+if ( ! function_exists( 'esc_url' ) ) {
+	/**
+	 * Stub for esc_url().
+	 *
+	 * @param string $url URL to escape.
+	 * @return string
+	 */
+	function esc_url( $url ) {
+		return $url;
+	}
+}
+
+if ( ! function_exists( 'admin_url' ) ) {
+	/**
+	 * Stub for admin_url().
+	 *
+	 * @param string $path Path relative to admin.
+	 * @return string
+	 */
+	function admin_url( $path = '' ) {
+		return 'http://example.com/wp-admin/' . $path;
+	}
+}
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+	/**
+	 * Stub for wp_json_encode().
+	 *
+	 * @param mixed $data Data to encode.
+	 * @return string
+	 */
+	function wp_json_encode( $data ) {
+		return json_encode( $data );
+	}
+}
+
 // Load Composer autoloader if available.
 $autoloader = dirname( __DIR__ ) . '/vendor/autoload.php';
 if ( file_exists( $autoloader ) ) {
@@ -290,4 +339,4 @@ require_once dirname( __DIR__ ) . '/includes/OpenExchangeRate.php';
 require_once dirname( __DIR__ ) . '/includes/admin/currency-settings.php';
 
 // Trigger includes so all plugin classes are loaded.
-ChipWooConvertCurrency::getInstance();
+ChipWooConvertCurrency::get_instance();

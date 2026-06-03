@@ -1,9 +1,15 @@
 <?php
-
 /**
+ * CHIP Woo Convert Currency
+ *
+ * @package   CHIP_Woo_Convert_Currency
+ * @author    Chip In Sdn Bhd
+ * @license   GPL-3.0-or-later
+ * @link      https://chip-in.asia
+ *
  * Plugin Name: CHIP Woo Convert Currency
  * Plugin URI: https://wordpress.org/plugins/chip-woo-convert-currency/
- * Description: Convert unsupported currency to MYR for CHIP for WooCommerce
+ * Description: Convert unsupported currency to MYR for CHIP for WooCommerce.
  * Version: 1.3.0
  * Author: Chip In Sdn Bhd
  * Author URI: https://chip-in.asia
@@ -18,206 +24,390 @@
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  */
 
-class ChipWooConvertCurrency
-{
-    private static $instance = null;
+/**
+ * Main plugin class.
+ *
+ * @package CHIP_Woo_Convert_Currency
+ * @since   1.0.0
+ */
+class ChipWooConvertCurrency {
 
-    public static function getInstance()
-    {
-        if (self::$instance == null) {
-            self::$instance = new ChipWooConvertCurrency();
-        }
- 
-        return self::$instance;
-    }
+	/**
+	 * Singleton instance.
+	 *
+	 * @since 1.0.0
+	 * @var   ChipWooConvertCurrency|null
+	 */
+	private static $instance = null;
 
-    private $provider;
-    private $charge_percent;
-    private $charge_fixed_cent;
+	/**
+	 * Exchange rate provider instance.
+	 *
+	 * @since 1.0.0
+	 * @var   object|null
+	 */
+	private $provider;
 
-    public function __construct()
-    {
-        $this->define();
-        $this->includes();
-        $this->actions();
+	/**
+	 * Percentage charge multiplier.
+	 *
+	 * @since 1.0.0
+	 * @var   float
+	 */
+	private $charge_percent;
 
-        $this->set_currency_provider();
-        $this->set_charge_percent();
-        $this->set_charge_fixed_cent();
+	/**
+	 * Fixed charge in cents.
+	 *
+	 * @since 1.0.0
+	 * @var   int
+	 */
+	private $charge_fixed_cent;
 
-        $this->add_repetitive_hooks();
-    }
+	/**
+	 * Get the singleton instance.
+	 *
+	 * @since 1.0.0
+	 * @return ChipWooConvertCurrency
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new ChipWooConvertCurrency();
+		}
 
-    public function actions() {
-        add_action( 'init', array( $this, 'register_scripts' ) );
-        add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
+		return self::$instance;
+	}
 
-        /**
-         * Declare plugin compatibility with WooCommerce HPOS.
-         *
-         */
-        add_action(
-          'before_woocommerce_init',
-              function() {
-                if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-                  \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-                }
-              }
-        );
-    }
+	/**
+	 * Constructor.
+	 *
+	 * @since 1.0.0
+	 */
+	public function __construct() {
+		$this->define();
+		$this->includes();
+		$this->actions();
 
-    public function define() {
-      defined( 'CHIP_WCC_MODULE_VERSION' ) || define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.0' );
-      defined( 'CHIP_WCC_FILE' )          || define( 'CHIP_WCC_FILE', __FILE__ );
-      defined( 'CHIP_WCC_BASENAME' )      || define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ) );
-      defined( 'CHIP_WCC_URL' )            || define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ) );
-    }
+		$this->set_currency_provider();
+		$this->set_charge_percent();
+		$this->set_charge_fixed_cent();
 
-    public function includes() {
-      if ( is_admin() ) {
-        $includes_dir = plugin_dir_path( CHIP_WCC_FILE ) . 'includes/admin/';
-        include $includes_dir . 'currency-settings.php';
-      }
-    }
+		$this->add_repetitive_hooks();
+		$this->add_action_links();
+	}
 
-    public function register_scripts() {
-      wp_register_script(
-        "wcc-admin-settings",
-        trailingslashit( CHIP_WCC_URL ) . 'assets/js/admin/currency-settings.js',
-        array( 'jquery' ),
-        CHIP_WCC_MODULE_VERSION,
-      );
-    }
+	/**
+	 * Register WordPress actions.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function actions() {
+		add_action( 'init', array( $this, 'register_scripts' ) );
+		add_action( 'woocommerce_settings_save_general', array( $this, 'remove_transient' ) );
 
-    private function add_repetitive_hooks() {
-      $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6'];
+		add_action(
+			'before_woocommerce_init',
+			function () {
+				if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+					\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+				}
+			}
+		);
+	}
 
-      foreach ( $chip_ids as $chip_id ) {
-        // Legacy wc_ prefixed hooks for v1.x backward compatibility
-        add_filter( "wc_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
-        add_filter( "wc_{$chip_id}_supported_currencies", array($this, 'apply_base_currency'));
-        add_filter( "wc_{$chip_id}_purchase_currency", array($this, 'apply_myr_currency'));
-        add_filter( "wc_{$chip_id}_can_refund_order", array($this, 'can_refund_order'), 10, 3);
+	/**
+	 * Define plugin constants.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function define() {
+		defined( 'CHIP_WCC_MODULE_VERSION' ) || define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.0' );
+		defined( 'CHIP_WCC_FILE' ) || define( 'CHIP_WCC_FILE', __FILE__ );
+		defined( 'CHIP_WCC_BASENAME' ) || define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ) );
+		defined( 'CHIP_WCC_URL' ) || define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ) );
+	}
 
-        // New chip_ prefixed hooks for v2.x compatibility
-        add_filter( "chip_{$chip_id}_purchase_params", array($this, 'purchase_parameter'), 10, 2);
-        add_filter( "chip_{$chip_id}_supported_currencies", array($this, 'apply_base_currency'));
-        add_filter( "chip_{$chip_id}_purchase_currency", array($this, 'apply_myr_currency'));
-        add_filter( "chip_{$chip_id}_can_refund_order", array($this, 'can_refund_order'), 10, 3);
-      }
+	/**
+	 * Include admin files when in admin context.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function includes() {
+		if ( is_admin() ) {
+			$includes_dir = plugin_dir_path( CHIP_WCC_FILE ) . 'includes/admin/';
+			include $includes_dir . 'currency-settings.php';
+		}
+	}
 
-      // WooCommerce Blocks: inject supported currencies so canMakePayment doesn't hide the gateway
-      add_filter( 'chip_blocks_payment_method_data', array($this, 'blocks_payment_method_data'), 10, 3 );
-    }
+	/**
+	 * Register admin scripts.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function register_scripts() {
+		wp_register_script(
+			'wcc-admin-settings',
+			trailingslashit( CHIP_WCC_URL ) . 'assets/js/admin/currency-settings.js',
+			array( 'jquery' ),
+			CHIP_WCC_MODULE_VERSION,
+			false
+		);
+	}
 
-    public function can_refund_order( $can_refund_order, $order, $gateway )
-    {
-        return false;
-    }
+	/**
+	 * Add "Settings" link on the plugins page.
+	 *
+	 * @since 1.3.0
+	 * @return void
+	 */
+	public function add_action_links() {
+		add_filter(
+			'plugin_action_links_' . CHIP_WCC_BASENAME,
+			function ( $links ) {
+				$settings_link = sprintf(
+					'<a href="%s">%s</a>',
+					esc_url( admin_url( 'admin.php?page=wc-settings&tab=general' ) ),
+					esc_html__( 'Settings', 'woocommerce' )
+				);
+				array_unshift( $links, $settings_link );
+				return $links;
+			}
+		);
+	}
 
-    public function blocks_payment_method_data( $payment_method_data, $name, $gateway )
-    {
-        $chip_ids = ['wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6'];
+	/**
+	 * Attach hooks for all CHIP gateway instances.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	private function add_repetitive_hooks() {
+		$chip_ids = array( 'wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6' );
 
-        if ( in_array( $name, $chip_ids, true ) ) {
-            $payment_method_data['supported_currencies'] = $this->apply_base_currency( array( 'MYR' ) );
-        }
+		foreach ( $chip_ids as $chip_id ) {
+			// Legacy wc_ prefixed hooks for v1.x backward compatibility.
+			add_filter( "wc_{$chip_id}_purchase_params", array( $this, 'purchase_parameter' ), 10, 2 );
+			add_filter( "wc_{$chip_id}_supported_currencies", array( $this, 'apply_base_currency' ) );
+			add_filter( "wc_{$chip_id}_purchase_currency", array( $this, 'apply_myr_currency' ) );
+			add_filter( "wc_{$chip_id}_can_refund_order", array( $this, 'can_refund_order' ), 10, 3 );
 
-        return $payment_method_data;
-    }
+			// New chip_ prefixed hooks for v2.x compatibility.
+			add_filter( "chip_{$chip_id}_purchase_params", array( $this, 'purchase_parameter' ), 10, 2 );
+			add_filter( "chip_{$chip_id}_supported_currencies", array( $this, 'apply_base_currency' ) );
+			add_filter( "chip_{$chip_id}_purchase_currency", array( $this, 'apply_myr_currency' ) );
+			add_filter( "chip_{$chip_id}_can_refund_order", array( $this, 'can_refund_order' ), 10, 3 );
+		}
 
-    public function set_currency_provider()
-    {
-        if (get_option('chip_wcc_options') == 'fixedrate'){
-          $this->provider = null;
-        } else if (get_option('chip_wcc_options') && get_option('chip_wcc_options') == 'oer' && get_option('wcc_oer_key')){
-            require_once 'includes/OpenExchangeRate.php';
-            $this->provider = ChipOpenExchangeRate::getInstance(get_option('wcc_oer_key'));
-        } else {
-            require_once 'includes/BankNegaraMalaysia.php';
-            $this->provider = ChipBNMAPI::getInstance();
-        }
-    }
+		// WooCommerce Blocks: inject supported currencies so canMakePayment doesn't hide the gateway.
+		add_filter( 'chip_blocks_payment_method_data', array( $this, 'blocks_payment_method_data' ), 10, 3 );
+	}
 
-    public function set_charge_percent()
-    {
-        if (get_option('wcc_percentage_rate')){
-          $this->charge_percent = get_option('wcc_percentage_rate') / 100.0 + 1.0;
-        } else {
-          $this->charge_percent = 1;
-        }
-    }
+	/**
+	 * Disable refunds for converted orders.
+	 *
+	 * Refunds are disabled because the converted amounts make automatic refund
+	 * processing unsafe.
+	 *
+	 * @since 1.0.0
+	 * @param bool          $can_refund_order Whether the order can be refunded.
+	 * @param WC_Order      $order            Order object.
+	 * @param WC_Payment_Gateway $gateway     Payment gateway instance.
+	 * @return bool
+	 */
+	public function can_refund_order( $can_refund_order, $order, $gateway ) {
+		return false;
+	}
 
-    public function set_charge_fixed_cent()
-    {
-        if (get_option('wcc_fixed_charge')) {
-          $this->charge_fixed_cent = get_option('wcc_fixed_charge');
-        } else {
-          $this->charge_fixed_cent = 0;
-        }
-    }
+	/**
+	 * Inject supported currencies into WooCommerce Blocks payment data.
+	 *
+	 * @since 1.3.0
+	 * @param array  $payment_method_data Payment method data.
+	 * @param string $name                Gateway name.
+	 * @param object $gateway             Gateway instance.
+	 * @return array
+	 */
+	public function blocks_payment_method_data( $payment_method_data, $name, $gateway ) {
+		$chip_ids = array( 'wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6' );
 
-    public function purchase_parameter($params, $gateway)
-    {
-        if ( $params['purchase']['currency'] == 'MYR' ) {
-          return $params;
-        }
+		if ( in_array( $name, $chip_ids, true ) ) {
+			$payment_method_data['supported_currencies'] = $this->apply_base_currency( array( 'MYR' ) );
+		}
 
-        $conversion_rate = $this->get_current_conversion();
+		return $payment_method_data;
+	}
 
-        for( $i = 0; $i < sizeof( $params['purchase']['products'] ); $i++ ) {
-          $params['purchase']['products'][$i]['price'] = round( $params['purchase']['products'][$i]['price'] * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent );
-        }
+	/**
+	 * Set the exchange rate provider.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function set_currency_provider() {
+		$provider_option = get_option( 'chip_wcc_options' );
 
-        $params['purchase']['total_override'] = round( $params['purchase']['total_override'] * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent );
+		if ( 'fixedrate' === $provider_option ) {
+			$this->provider = null;
+		} elseif ( 'oer' === $provider_option && get_option( 'wcc_oer_key' ) ) {
+			require_once 'includes/OpenExchangeRate.php';
+			$this->provider = ChipOpenExchangeRate::get_instance( get_option( 'wcc_oer_key' ) );
+		} else {
+			require_once 'includes/BankNegaraMalaysia.php';
+			$this->provider = ChipBNMAPI::get_instance();
+		}
+	}
 
-        $params['purchase']['currency'] = 'MYR';
+	/**
+	 * Set the percentage charge multiplier.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function set_charge_percent() {
+		$percentage = get_option( 'wcc_percentage_rate' );
 
-        return $params;
-    }
+		if ( $percentage ) {
+			$this->charge_percent = ( (float) $percentage / 100.0 ) + 1.0;
+		} else {
+			$this->charge_percent = 1;
+		}
+	}
 
-    public function apply_myr_currency($currency)
-    {
-        return 'MYR';
-    }
+	/**
+	 * Set the fixed charge in cents.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function set_charge_fixed_cent() {
+		$fixed = get_option( 'wcc_fixed_charge' );
 
-    public function apply_base_currency($currency)
-    {
-        if ($this->provider instanceof ChipOpenExchangeRate){
-          array_push($currency,"AED","AFN","ALL","AMD","ANG","AOA","ARS","AUD","AWG","AZN","BAM","BBD","BDT","BGN","BHD","BIF","BMD","BND","BOB","BRL","BSD","BTC","BTN","BWP","BYN","BZD","CAD","CDF","CHF","CLF","CLP","CNH","CNY","COP","CRC","CUC","CUP","CVE","CZK","DJF","DKK","DOP","DZD","EGP","ERN","ETB","EUR","FJD","FKP","GBP","GEL","GGP","GHS","GIP","GMD","GNF","GTQ","GYD","HKD","HNL","HRK","HTG","HUF","IDR","ILS","IMP","INR","IQD","IRR","ISK","JEP","JMD","JOD","JPY","KES","KGS","KHR","KMF","KPW","KRW","KWD","KYD","KZT","LAK","LBP","LKR","LRD","LSL","LYD","MAD","MDL","MGA","MKD","MMK","MNT","MOP","MRU","MUR","MVR","MWK","MXN","MYR","MZN","NAD","NGN","NIO","NOK","NPR","NZD","OMR","PAB","PEN","PGK","PHP","PKR","PLN","PYG","QAR","RON","RSD","RUB","RWF","SAR","SBD","SCR","SDG","SEK","SGD","SHP","SLL","SOS","SRD","SSP","STD","STN","SVC","SYP","SZL","THB","TJS","TMT","TND","TOP","TRY","TTD","TWD","TZS","UAH","UGX","USD","UYU","UZS","VES","VND","VUV","WST","XAF","XAG","XAU","XCD","XDR","XOF","XPD","XPF","XPT","YER","ZAR","ZMW","ZWL");
-        } elseif ($this->provider instanceof ChipBNMAPI) {
-          array_push($currency,"JPY","AED","AUD","BND","CAD","CHF","CNY","EGP","EUR","GBP","HKD","IDR","INR","KHR","KRW","MMK","NPR","NZD","PHP","PKR","SAR","SGD","THB","TWD","USD","VND","SDR");          
-        } elseif (is_null($this->provider)){
-          array_push($currency, 'MYR');
-        }
+		if ( $fixed ) {
+			$this->charge_fixed_cent = (int) $fixed;
+		} else {
+			$this->charge_fixed_cent = 0;
+		}
+	}
 
-        return $currency;
-    }
+	/**
+	 * Convert purchase parameters to MYR.
+	 *
+	 * @since 1.0.0
+	 * @param array          $params  Purchase parameters.
+	 * @param WC_Payment_Gateway $gateway Payment gateway.
+	 * @return array
+	 * @throws Exception If conversion rate cannot be retrieved.
+	 */
+	public function purchase_parameter( $params, $gateway ) {
+		if ( 'MYR' === $params['purchase']['currency'] ) {
+			return $params;
+		}
 
-    public function get_current_conversion()
-    {
-        if (is_null($this->provider)){
-            return get_option('wcc_fixed_rate');
-        }
+		$conversion_rate = $this->get_current_conversion();
 
-        $rates = $this->provider->getRates(get_woocommerce_currency());
+		$product_count = count( $params['purchase']['products'] );
+		for ( $i = 0; $i < $product_count; $i++ ) {
+			$params['purchase']['products'][ $i ]['price'] = round( $params['purchase']['products'][ $i ]['price'] * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent );
+		}
 
-        $rates = json_decode($rates);
+		$params['purchase']['total_override'] = round( $params['purchase']['total_override'] * $conversion_rate * $this->charge_percent + $this->charge_fixed_cent );
 
-        if ($rates && !empty($rates->base) && !empty($rates->rates)) {
-            return $rates->rates->MYR;
-        }
+		$params['purchase']['currency'] = 'MYR';
 
-        throw new Exception( 'Unable to get currency conversion rates' );
-    }
+		return $params;
+	}
 
-    public function remove_transient()
-    {
-      if (is_object($this->provider) && method_exists($this->provider, 'delete_transient')){
-        $this->provider->delete_transient();
-      }
-    }
+	/**
+	 * Force purchase currency to MYR.
+	 *
+	 * @since 1.0.0
+	 * @param string $currency Current currency.
+	 * @return string
+	 */
+	public function apply_myr_currency( $currency ) {
+		return 'MYR';
+	}
 
+	/**
+	 * Declare supported currencies based on the active provider.
+	 *
+	 * @since 1.0.0
+	 * @param array $currency List of supported currencies.
+	 * @return array
+	 */
+	public function apply_base_currency( $currency ) {
+		if ( $this->provider instanceof ChipOpenExchangeRate ) {
+			array_push(
+				$currency,
+				'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN',
+				'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL',
+				'BSD', 'BTC', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLF',
+				'CLP', 'CNH', 'CNY', 'COP', 'CRC', 'CUC', 'CUP', 'CVE', 'CZK', 'DJF',
+				'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP',
+				'GEL', 'GGP', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL',
+				'HRK', 'HTG', 'HUF', 'IDR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISK',
+				'JEP', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW',
+				'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD',
+				'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK',
+				'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR',
+				'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD',
+				'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLL',
+				'SOS', 'SRD', 'SSP', 'STD', 'STN', 'SVC', 'SYP', 'SZL', 'THB', 'TJS',
+				'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD',
+				'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XCD',
+				'XDR', 'XOF', 'XPD', 'XPF', 'XPT', 'YER', 'ZAR', 'ZMW', 'ZWL'
+			);
+		} elseif ( $this->provider instanceof ChipBNMAPI ) {
+			array_push(
+				$currency,
+				'JPY', 'AED', 'AUD', 'BND', 'CAD', 'CHF', 'CNY', 'EGP', 'EUR', 'GBP',
+				'HKD', 'IDR', 'INR', 'KHR', 'KRW', 'MMK', 'NPR', 'NZD', 'PHP', 'PKR',
+				'SAR', 'SGD', 'THB', 'TWD', 'USD', 'VND', 'SDR'
+			);
+		} elseif ( null === $this->provider ) {
+			array_push( $currency, 'MYR' );
+		}
+
+		return $currency;
+	}
+
+	/**
+	 * Get the current conversion rate to MYR.
+	 *
+	 * @since 1.0.0
+	 * @return float|int Conversion rate.
+	 * @throws Exception If the rate cannot be retrieved.
+	 */
+	public function get_current_conversion() {
+		if ( null === $this->provider ) {
+			return get_option( 'wcc_fixed_rate' );
+		}
+
+		$rates = $this->provider->get_rates( get_woocommerce_currency() );
+		$rates = json_decode( $rates );
+
+		if ( $rates && ! empty( $rates->base ) && ! empty( $rates->rates ) ) {
+			return $rates->rates->MYR;
+		}
+
+		throw new Exception( esc_html__( 'Unable to get currency conversion rates', 'woocommerce' ) );
+	}
+
+	/**
+	 * Clear the provider transient when WooCommerce general settings are saved.
+	 *
+	 * @since 1.0.0
+	 * @return void
+	 */
+	public function remove_transient() {
+		if ( is_object( $this->provider ) && method_exists( $this->provider, 'delete_transient' ) ) {
+			$this->provider->delete_transient();
+		}
+	}
 }
 
-ChipWooConvertCurrency::getInstance();
+ChipWooConvertCurrency::get_instance();

@@ -1,112 +1,165 @@
-<?php 
+<?php
+/**
+ * Admin settings for CHIP Woo Convert Currency.
+ *
+ * @package   CHIP_Woo_Convert_Currency
+ * @author    Chip In Sdn Bhd
+ * @license   GPL-3.0-or-later
+ * @link      https://chip-in.asia
+ * @since     1.1.0
+ */
 
+/**
+ * Admin settings class.
+ *
+ * Injects configuration fields into WooCommerce → Settings → General.
+ *
+ * @package CHIP_Woo_Convert_Currency
+ * @since   1.1.0
+ */
 class CurrencySettings {
-    private static $_instance;
 
-    public static function get_instance() {
-        if ( static::$_instance == null ) {
-            static::$_instance = new static();
-        }
+	/**
+	 * Singleton instance.
+	 *
+	 * @since 1.1.0
+	 * @var   CurrencySettings|null
+	 */
+	private static $instance;
 
-        return static::$_instance;
-    }
+	/**
+	 * Get the singleton instance.
+	 *
+	 * @since 1.1.0
+	 * @return CurrencySettings
+	 */
+	public static function get_instance() {
+		if ( null === static::$instance ) {
+			static::$instance = new static();
+		}
 
-    public function __construct()
-    {
-        $this->add_filters();
-        $this->add_actions();
-        
-    }
+		return static::$instance;
+	}
 
-    public function add_actions() {
-        add_action('admin_enqueue_scripts', [ $this, 'run_scripts']);
-    }
+	/**
+	 * Constructor.
+	 *
+	 * @since 1.1.0
+	 */
+	public function __construct() {
+		$this->add_filters();
+		$this->add_actions();
+	}
 
-    public function run_scripts() {
-        wp_enqueue_script( 'wcc-admin-settings' );
-    }
+	/**
+	 * Register WordPress actions.
+	 *
+	 * @since 1.1.0
+	 * @return void
+	 */
+	public function add_actions() {
+		add_action( 'admin_enqueue_scripts', array( $this, 'run_scripts' ) );
+	}
 
-    public function add_filters() {
-        add_filter( 'woocommerce_general_settings', array($this, 'currency_settings_page'));
-    }
+	/**
+	 * Enqueue admin scripts.
+	 *
+	 * @since 1.1.0
+	 * @return void
+	 */
+	public function run_scripts() {
+		wp_enqueue_script( 'wcc-admin-settings' );
+	}
 
-    public function currency_settings_page($settings = null) {
+	/**
+	 * Register WordPress filters.
+	 *
+	 * @since 1.1.0
+	 * @return void
+	 */
+	public function add_filters() {
+		add_filter( 'woocommerce_general_settings', array( $this, 'currency_settings_page' ) );
+	}
 
-        $options = [
-            'bnm' => 'BNM', 
-            'oer' => 'Open Exchange Rate API', 
-            'fixedrate' => 'Fixed Rate'
-        ];
+	/**
+	 * Append currency conversion settings to WooCommerce general settings.
+	 *
+	 * @since 1.1.0
+	 * @param array|null $settings Existing settings array.
+	 * @return array
+	 */
+	public function currency_settings_page( $settings = null ) {
+		$options = array(
+			'bnm'       => __( 'BNM', 'woocommerce' ),
+			'oer'       => __( 'Open Exchange Rate API', 'woocommerce' ),
+			'fixedrate' => __( 'Fixed Rate', 'woocommerce' ),
+		);
 
-        $addon_settings = [
-            array(
-                'title' => __( 'CHIP Convert Currency API Options', 'woocommerce' ),
-                'type'  => 'title',
-                'desc'  => __( 'The following options convert the base currency to MYR for CHIP purposes', 'woocommerce' ),
-                'id'    => 'wcc_api_options',
-            ),
-            array(
-                'title'    => __( 'API Options', 'woocommerce' ),
-                'desc'     => __( 'Configure your preferred providers. Default: BNM', 'woocommerce' ),
-                'id'       => 'chip_wcc_options',
-                'default'  => 'bnm',
-                'type'     => 'select',
-                'class'    => 'wc-enhanced-select',
-                'desc_tip' => true,
-                'options'  => $options,
-            ),
-            array(
-                'title'   => __( 'Open Exchange Rate API Key', 'woocommerce' ),
-                'desc'    => __( 'If you are using Open Exchange Rate, you need to set the key for the exchange to work', 'woocommerce' ),
-                'id'      => 'wcc_oer_key',
-                'css'     => 'min-width: 50px;',
-                'default' => '',
-                'desc_tip' => true,
-                'type'    => 'text',
-            ),
-            array(
-                'title'   => __( 'Fixed Exchange Rate', 'woocommerce' ),
-                'desc'    => __( 'You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.', 'woocommerce' ),
-                'id'      => 'wcc_fixed_rate',
-                'css'     => 'min-width: 50px;',
-                'default' => '',
-                'desc_tip' => true,
-                'type'    => 'text',
-            ),
-            array(
-                'title'   => __( 'Percentage Charge', 'woocommerce' ),
-                'desc'    => __( 'Add percentage charge, the charge calculation are added after conversion is done.', 'woocommerce' ),
-                'id'      => 'wcc_percentage_rate',
-                'css'     => 'min-width: 50px;',
-                'default' => '',
-                'desc_tip' => true,
-                'type'    => 'text',
-            ),
+		$addon_settings = array(
+			array(
+				'title' => __( 'CHIP Convert Currency API Options', 'woocommerce' ),
+				'type'  => 'title',
+				'desc'  => __( 'The following options convert the base currency to MYR for CHIP purposes', 'woocommerce' ),
+				'id'    => 'wcc_api_options',
+			),
+			array(
+				'title'    => __( 'API Options', 'woocommerce' ),
+				'desc'     => __( 'Configure your preferred providers. Default: BNM', 'woocommerce' ),
+				'id'       => 'chip_wcc_options',
+				'default'  => 'bnm',
+				'type'     => 'select',
+				'class'    => 'wc-enhanced-select',
+				'desc_tip' => true,
+				'options'  => $options,
+			),
+			array(
+				'title'    => __( 'Open Exchange Rate API Key', 'woocommerce' ),
+				'desc'     => __( 'If you are using Open Exchange Rate, you need to set the key for the exchange to work', 'woocommerce' ),
+				'id'       => 'wcc_oer_key',
+				'css'      => 'min-width: 50px;',
+				'default'  => '',
+				'desc_tip' => true,
+				'type'     => 'text',
+			),
+			array(
+				'title'    => __( 'Fixed Exchange Rate', 'woocommerce' ),
+				'desc'     => __( 'You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.', 'woocommerce' ),
+				'id'       => 'wcc_fixed_rate',
+				'css'      => 'min-width: 50px;',
+				'default'  => '',
+				'desc_tip' => true,
+				'type'     => 'text',
+			),
+			array(
+				'title'    => __( 'Percentage Charge', 'woocommerce' ),
+				'desc'     => __( 'Add percentage charge. The charge calculations are added after conversion is done.', 'woocommerce' ),
+				'id'       => 'wcc_percentage_rate',
+				'css'      => 'min-width: 50px;',
+				'default'  => '',
+				'desc_tip' => true,
+				'type'     => 'text',
+			),
+			array(
+				'title'    => __( 'Fixed Charge (cent in MYR)', 'woocommerce' ),
+				'desc'     => __( 'Add fixed charge. The charge calculations are added after conversion is done.', 'woocommerce' ),
+				'id'       => 'wcc_fixed_charge',
+				'css'      => 'min-width: 50px;',
+				'default'  => '',
+				'desc_tip' => true,
+				'type'     => 'text',
+			),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'api_options',
+			),
+		);
 
-            array(
-                'title'   => __( 'Fixed Charge (cent in MYR)', 'woocommerce' ),
-                'desc'    => __( 'Add fixed charge, the charge calculation are added after conversion is done.', 'woocommerce' ),
-                'id'      => 'wcc_fixed_charge',
-                'css'     => 'min-width: 50px;',
-                'default' => '',
-                'desc_tip' => true,
-                'type'    => 'text',
-            ),
-            
-            array(
-                'type' => 'sectionend',
-                'id'   => 'api_options',
-            ),
-        ];
-          
-        if (! is_null($settings)) {
-            return array_merge($settings, $addon_settings);
-        } else {
-            return $addon_settings;
-        }
-    }
+		if ( ! is_null( $settings ) ) {
+			return array_merge( $settings, $addon_settings );
+		}
+
+		return $addon_settings;
+	}
 }
 
 CurrencySettings::get_instance();
-
-

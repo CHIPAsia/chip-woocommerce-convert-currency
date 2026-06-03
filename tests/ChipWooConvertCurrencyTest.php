@@ -26,7 +26,7 @@ class ChipWooConvertCurrencyTest extends PHPUnit\Framework\TestCase {
 	 * @return ChipWooConvertCurrency
 	 */
 	private function get_instance(): ChipWooConvertCurrency {
-		return ChipWooConvertCurrency::getInstance();
+		return ChipWooConvertCurrency::get_instance();
 	}
 
 	/**
@@ -153,7 +153,7 @@ class ChipWooConvertCurrencyTest extends PHPUnit\Framework\TestCase {
 	 * Test BNM provider can be instantiated.
 	 */
 	public function test_bnm_provider_instantiation() {
-		$provider = ChipBNMAPI::getInstance();
+		$provider = ChipBNMAPI::get_instance();
 		$this->assertInstanceOf( 'ChipBNMAPI', $provider );
 	}
 
@@ -161,7 +161,7 @@ class ChipWooConvertCurrencyTest extends PHPUnit\Framework\TestCase {
 	 * Test OER provider can be instantiated.
 	 */
 	public function test_oer_provider_instantiation() {
-		$provider = ChipOpenExchangeRate::getInstance( 'test-key' );
+		$provider = ChipOpenExchangeRate::get_instance( 'test-key' );
 		$this->assertInstanceOf( 'ChipOpenExchangeRate', $provider );
 	}
 }
