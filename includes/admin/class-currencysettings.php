@@ -90,21 +90,21 @@ class CurrencySettings {
 	 */
 	public function currency_settings_page( $settings = null ) {
 		$options = array(
-			'bnm'       => __( 'BNM', 'woocommerce' ),
-			'oer'       => __( 'Open Exchange Rate API', 'woocommerce' ),
-			'fixedrate' => __( 'Fixed Rate', 'woocommerce' ),
+			'bnm'       => __( 'BNM', 'chip-woo-convert-currency' ),
+			'oer'       => __( 'Open Exchange Rate API', 'chip-woo-convert-currency' ),
+			'fixedrate' => __( 'Fixed Rate', 'chip-woo-convert-currency' ),
 		);
 
 		$addon_settings = array(
 			array(
-				'title' => __( 'CHIP Convert Currency API Options', 'woocommerce' ),
+				'title' => __( 'CHIP Convert Currency API Options', 'chip-woo-convert-currency' ),
 				'type'  => 'title',
-				'desc'  => __( 'The following options convert the base currency to MYR for CHIP purposes', 'woocommerce' ),
+				'desc'  => __( 'The following options convert the base currency to MYR for CHIP purposes', 'chip-woo-convert-currency' ),
 				'id'    => 'wcc_api_options',
 			),
 			array(
-				'title'    => __( 'API Options', 'woocommerce' ),
-				'desc'     => __( 'Configure your preferred providers. Default: BNM', 'woocommerce' ),
+				'title'    => __( 'API Options', 'chip-woo-convert-currency' ),
+				'desc'     => __( 'Configure your preferred providers. Default: BNM', 'chip-woo-convert-currency' ),
 				'id'       => 'chip_wcc_options',
 				'default'  => 'bnm',
 				'type'     => 'select',
@@ -113,8 +113,8 @@ class CurrencySettings {
 				'options'  => $options,
 			),
 			array(
-				'title'    => __( 'Open Exchange Rate API Key', 'woocommerce' ),
-				'desc'     => __( 'If you are using Open Exchange Rate, you need to set the key for the exchange to work', 'woocommerce' ),
+				'title'    => __( 'Open Exchange Rate API Key', 'chip-woo-convert-currency' ),
+				'desc'     => __( 'If you are using Open Exchange Rate, you need to set the key for the exchange to work', 'chip-woo-convert-currency' ),
 				'id'       => 'wcc_oer_key',
 				'css'      => 'min-width: 50px;',
 				'default'  => '',
@@ -122,8 +122,8 @@ class CurrencySettings {
 				'type'     => 'text',
 			),
 			array(
-				'title'    => __( 'Fixed Exchange Rate', 'woocommerce' ),
-				'desc'     => __( 'You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.', 'woocommerce' ),
+				'title'    => __( 'Fixed Exchange Rate', 'chip-woo-convert-currency' ),
+				'desc'     => __( 'You may use your own exchange rate instead of using automated rates from API providers. By setting this option, the plugin will not fetch exchange rates from API providers.', 'chip-woo-convert-currency' ),
 				'id'       => 'wcc_fixed_rate',
 				'css'      => 'min-width: 50px;',
 				'default'  => '',
@@ -131,8 +131,8 @@ class CurrencySettings {
 				'type'     => 'text',
 			),
 			array(
-				'title'    => __( 'Percentage Charge', 'woocommerce' ),
-				'desc'     => __( 'Add percentage charge. The charge calculations are added after conversion is done.', 'woocommerce' ),
+				'title'    => __( 'Percentage Charge', 'chip-woo-convert-currency' ),
+				'desc'     => __( 'Add percentage charge. The charge calculations are added after conversion is done.', 'chip-woo-convert-currency' ),
 				'id'       => 'wcc_percentage_rate',
 				'css'      => 'min-width: 50px;',
 				'default'  => '',
@@ -140,8 +140,8 @@ class CurrencySettings {
 				'type'     => 'text',
 			),
 			array(
-				'title'    => __( 'Fixed Charge (cent in MYR)', 'woocommerce' ),
-				'desc'     => __( 'Add fixed charge. The charge calculations are added after conversion is done.', 'woocommerce' ),
+				'title'    => __( 'Fixed Charge (cent in MYR)', 'chip-woo-convert-currency' ),
+				'desc'     => __( 'Add fixed charge. The charge calculations are added after conversion is done.', 'chip-woo-convert-currency' ),
 				'id'       => 'wcc_fixed_charge',
 				'css'      => 'min-width: 50px;',
 				'default'  => '',

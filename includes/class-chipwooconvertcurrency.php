@@ -142,7 +142,7 @@ class ChipWooConvertCurrency {
 				$settings_link = sprintf(
 					'<a href="%s">%s</a>',
 					esc_url( admin_url( 'admin.php?page=wc-settings&tab=general' ) ),
-					esc_html__( 'Settings', 'woocommerce' )
+					esc_html__( 'Settings', 'chip-woo-convert-currency' )
 				);
 				array_unshift( $links, $settings_link );
 				return $links;
@@ -535,7 +535,7 @@ class ChipWooConvertCurrency {
 			return $rates->rates->MYR;
 		}
 
-		throw new Exception( esc_html__( 'Unable to get currency conversion rates', 'woocommerce' ) );
+		throw new Exception( esc_html__( 'Unable to get currency conversion rates', 'chip-woo-convert-currency' ) );
 	}
 
 	/**
