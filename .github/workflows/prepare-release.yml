@@ -1,0 +1,185 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 1.3.0)'
+        required: true
+        type: string
+
+jobs:
+  bump-and-pr:
+    name: Bump Version and Open PR
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Error: Version must be in X.Y.Z format (e.g., 1.3.0)"
+            exit 1
+          fi
+          echo "✅ Version format valid: $VERSION"
+
+      - name: Check version does not already exist
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "❌ Error: Tag v${VERSION} already exists."
+            exit 1
+          fi
+          if grep -q "^= ${VERSION} " changelog.txt; then
+            echo "❌ Error: Changelog entry for ${VERSION} already exists."
+            exit 1
+          fi
+          echo "✅ Version ${VERSION} is new"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: pip install requests
+
+      - name: Get previous tag
+        id: prev_tag
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "tag=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
+          echo "📎 Previous tag: ${PREVIOUS_TAG:-none}"
+
+      - name: Get diff since previous tag
+        id: diff
+        run: |
+          PREVIOUS_TAG="${{ steps.prev_tag.outputs.tag }}"
+          if [ -n "$PREVIOUS_TAG" ]; then
+            git diff "$PREVIOUS_TAG..HEAD" --stat > diff.txt
+            echo "" >> diff.txt
+            git diff "$PREVIOUS_TAG..HEAD" >> diff.txt
+          else
+            echo "No previous tag found; using last 20 commits as context." > diff.txt
+            echo "" >> diff.txt
+            git log --pretty=format:"- %s" --no-merges -n 20 >> diff.txt
+          fi
+          echo "📋 Diff since last release ($(wc -c < diff.txt) bytes):"
+          head -n 50 diff.txt
+
+      - name: Generate AI changelog
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_API_URL: ${{ vars.AI_API_URL }}
+          AI_MODEL: ${{ vars.AI_MODEL || 'gemini-3-flash-preview:cloud' }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          TODAY=$(date +%Y-%m-%d)
+          python scripts/generate_release_notes.py diff.txt "$VERSION" > changelog_entry.md
+
+          # Fix AI-hallucinated date to today's actual date
+          sed -i "s/^= ${VERSION} [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\} /= ${VERSION} ${TODAY} =/" changelog_entry.md
+
+          # Fix AI double-equals at end of header (== instead of =)
+          sed -i "s/^= ${VERSION} [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\} ==$/= ${VERSION} ${TODAY} =/" changelog_entry.md
+
+          echo "📝 AI-generated changelog entry:"
+          cat changelog_entry.md
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version and update changelog
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          bash -x ./scripts/bump-version.sh --yes --changelog-file changelog_entry.md "$VERSION"
+
+      - name: Clean up temporary files
+        run: |
+          rm -f diff.txt changelog_entry.md
+          echo "🧹 Removed temporary files"
+
+      - name: Commit changes to release branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          BRANCH="release/v${VERSION}"
+
+          git checkout -b "$BRANCH"
+          git commit -m "Bump version to ${VERSION}"
+          git push origin "$BRANCH"
+          echo "✅ Pushed branch ${BRANCH}"
+
+      - name: Create PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          BRANCH="release/v${VERSION}"
+
+          # Check if PR already exists
+          EXISTING_PR=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number' || echo "")
+
+          if [ -n "$EXISTING_PR" ]; then
+            echo "⚠️ PR #$EXISTING_PR already exists for branch $BRANCH"
+            echo "   Update it manually or close and re-run this workflow."
+            exit 1
+          fi
+
+          # Extract full changelog entry for PR body
+          CHANGELOG_BODY=$(sed -n '/^== Changelog ==/{n;n;:a;p;n;/^$/!ba}' readme.txt)
+
+          {
+            echo "## Release v${VERSION}"
+            echo ""
+            echo "### Changelog"
+            printf '%s\n' "${CHANGELOG_BODY}"
+            echo ""
+            echo "### Checklist"
+            echo "- [ ] Review changelog accuracy"
+            echo "- [ ] Verify version bumped in all files"
+            echo "- [ ] After merge, create tag \`v${VERSION}\` to trigger release"
+          } > pr_body.md
+
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "Release v${VERSION}" \
+            --body-file pr_body.md
+
+          rm -f pr_body.md
+          echo "✅ Created PR for v${VERSION}"
+
+      - name: Summary
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          BRANCH="release/v${VERSION}"
+          echo ""
+          echo "═══════════════════════════════════════"
+          echo "  Release ${VERSION} prepared"
+          echo "═══════════════════════════════════════"
+          echo ""
+          echo "What happened:"
+          echo "  • AI generated changelog from commits"
+          echo "  • Version bumped in all files"
+          echo "  • changelog.txt updated"
+          echo "  • Branch ${BRANCH} pushed"
+          echo "  • PR opened to main"
+          echo ""
+          echo "Next (manual):"
+          echo "  1. Review and merge the PR"
+          echo "  2. After merge, create tag: git tag -a v${VERSION} -m 'Release ${VERSION}'"
+          echo "  3. Push tag: git push origin v${VERSION}"
+          echo "  4. release-zip.yml triggers automatically on the tag"

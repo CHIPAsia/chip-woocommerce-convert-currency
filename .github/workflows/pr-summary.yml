@@ -1,0 +1,60 @@
+name: Auto Generate PR Summary
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  generate-summary:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Get PR Diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.txt
+          echo "📊 Diff size: $(wc -c < pr_diff.txt) bytes"
+
+      - name: Fetch current PR body
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr view ${{ github.event.pull_request.number }} --json body -q .body > current_body.md 2>/dev/null || touch current_body.md
+
+      - name: Generate Summary with AI
+        id: ai
+        env:
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          AI_API_URL: ${{ vars.AI_API_URL }}
+          AI_MODEL: ${{ vars.AI_MODEL || 'gemini-3-flash-preview:cloud' }}
+        run: |
+          python scripts/generate_pr_summary.py pr_diff.txt current_body.md > summary.md
+          echo "SUMMARY<<EOF" >> "$GITHUB_ENV"
+          cat summary.md >> "$GITHUB_ENV"
+          echo "EOF" >> "$GITHUB_ENV"
+
+      - name: Update PR Description
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -s summary.md ]; then
+            gh pr edit ${{ github.event.pull_request.number }} --body-file summary.md
+            echo "✅ Updated PR description"
+          else
+            echo "⚠️ Summary was empty; skipping PR update"
+          fi

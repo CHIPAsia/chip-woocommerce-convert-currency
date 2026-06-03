@@ -12,19 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Generate zip
       run: |
         # Create zip file using git archive which automatically respects .gitignore
-        git archive --format=zip --output=chip-for-fluentcart.zip HEAD
+        git archive --format=zip --output=chip-woo-convert-currency.zip HEAD
         
-        echo "✅ Created chip-for-fluentcart.zip"
-        ls -lh chip-for-fluentcart.zip
+        echo "✅ Created chip-woo-convert-currency.zip"
+        ls -lh chip-woo-convert-currency.zip
 
     - name: Upload zip artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
-        name: chip-for-fluentcart
-        path: chip-for-fluentcart.zip
+        name: chip-woo-convert-currency
+        path: chip-woo-convert-currency.zip
         retention-days: 5

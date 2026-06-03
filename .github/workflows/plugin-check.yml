@@ -1,0 +1,89 @@
+name: WordPress Plugin Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Tier 1: PHP compatibility ───
+
+  php-compatibility:
+    name: PHP ${{ matrix.php-version }} Compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['7.4', '8.0', '8.2', '8.4']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP ${{ matrix.php-version }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+
+      - name: Install PHPCompatibility
+        run: |
+          composer global config allow-plugins.dealerdirect/phpcodesniffer-composer-installer true
+          composer global require --dev squizlabs/php_codesniffer dealerdirect/phpcodesniffer-composer-installer phpcompatibility/phpcompatibility-wp:"*"
+          echo "$(composer global config bin-dir --absolute)" >> $GITHUB_PATH
+
+      - name: Verify PHPCS Standards
+        run: phpcs -i
+
+      - name: Check PHP ${{ matrix.php-version }} Compatibility
+        run: |
+          phpcs --standard=PHPCompatibilityWP --runtime-set testVersion ${{ matrix.php-version }} --extensions=php --ignore=vendor,node_modules,tests .
+
+  # ─── Tier 2: PHPCS (WordPress Standards) ───
+
+  phpcs:
+    name: PHP CodeSniffer (WordPress Standards)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v4
+
+      - name: Verify PHPCS Standards
+        run: vendor/bin/phpcs -i
+
+      - name: Run PHPCS
+        run: vendor/bin/phpcs --standard=phpcs.xml .
+
+  # ─── Tier 3: PHPUnit ───
+
+  phpunit:
+    name: PHPUnit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: phpunit
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v4
+
+      - name: Run PHPUnit
+        run: vendor/bin/phpunit
+

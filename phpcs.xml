@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<ruleset name="CHIP Woo Convert Currency">
+	<description>PHPCS ruleset for CHIP Woo Convert Currency plugin.</description>
+
+	<!-- What to scan -->
+	<file>.</file>
+
+	<!-- Only scan PHP files -->
+	<arg name="extensions" value="php"/>
+
+	<!-- Exclude paths -->
+	<exclude-pattern>/vendor/*</exclude-pattern>
+	<exclude-pattern>/node_modules/*</exclude-pattern>
+	<exclude-pattern>/assets/*</exclude-pattern>
+	<exclude-pattern>/tests/*</exclude-pattern>
+
+	<!-- Use WordPress coding standards -->
+	<rule ref="WordPress">
+	</rule>
+
+	<!-- Set minimum supported PHP version -->
+	<config name="minimum_supported_wp_version" value="6.3"/>
+	<config name="testVersion" value="7.4-"/>
+
+	<!-- Text domain -->
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="chip-woo-convert-currency"/>
+			</property>
+		</properties>
+	</rule>
+</ruleset>

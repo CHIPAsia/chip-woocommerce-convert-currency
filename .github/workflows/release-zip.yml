@@ -1,24 +1,76 @@
-name: Create Release Zip
+name: Create Release
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   build-and-release:
+    name: Build and Create GitHub Release
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Create zip file
+        uses: actions/checkout@v6
+
+      - name: Extract version from tag
+        id: vars
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "📦 Version: $VERSION"
+
+      - name: Create release zip
         run: |
           git archive HEAD --format=zip --output=chip-woo-convert-currency.zip
-      
-      - name: Upload release asset
+          echo "✅ Created chip-woo-convert-currency.zip"
+
+      - name: Extract changelog for release notes
+        id: changelog
         run: |
-          gh release upload "${{ github.event.release.tag_name }}" chip-woo-convert-currency.zip --clobber
+          VERSION="${{ steps.vars.outputs.version }}"
+
+          # Extract the latest changelog entry from changelog.txt
+          awk '
+            /^= '${VERSION}' / { found=1; print; next }
+            found && /^= [0-9]/ { exit }
+            found && NF > 0 { print }
+          ' changelog.txt > release_notes.md || true
+
+          if [ ! -s release_notes.md ]; then
+            echo "⚠️ No changelog entry found for ${VERSION}"
+            echo "Release ${VERSION}" > release_notes.md
+          fi
+
+          echo "📝 Release notes:"
+          cat release_notes.md
+
+      - name: Create or update GitHub release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.vars.outputs.version }}"
+          TAG="v${VERSION}"
 
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "⚠️ Release $TAG already exists. Updating..."
+            gh release edit "$TAG" --notes-file release_notes.md
+          else
+            echo "🏷️ Creating new release $TAG..."
+            gh release create "$TAG" \
+              --title "v${VERSION}" \
+              --notes-file release_notes.md
+          fi
+
+      - name: Upload release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.vars.outputs.version }}"
+          TAG="v${VERSION}"
+
+          gh release upload "$TAG" chip-woo-convert-currency.zip --clobber
+          echo "✅ Uploaded release asset"
