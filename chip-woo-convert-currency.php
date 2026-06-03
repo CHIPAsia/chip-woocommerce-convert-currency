@@ -46,7 +46,6 @@ class ChipWooConvertCurrency
         $this->set_charge_fixed_cent();
 
         $this->add_repetitive_hooks();
-        add_action('woocommerce_settings_save_general', array($this, 'remove_transient'));
     }
 
     public function actions() {

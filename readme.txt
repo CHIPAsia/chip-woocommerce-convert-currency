@@ -50,7 +50,7 @@ Automatic updates should work smoothly, but we still recommend you back up your 
 
 = Who is the API Provider? =
 
-There is 2 API provider. First is Bank Negara Malaysia (default API) and the second is from OpenExchangeRate.
+There are 2 API providers. First is Bank Negara Malaysia (default API) and the second is from OpenExchangeRate.
 
 == Links ==
 

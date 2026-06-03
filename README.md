@@ -7,7 +7,7 @@ This plugin adds capability for CHIP for WooCommerce to convert total amount mad
 Currently, the plugin has been integrated with Bank Negara Malaysia (BNM) and Open Exchange Rate (OER) to automate the currency conversion process. The default provider is BNM API. Please do write to us if you need to integrate with other providers.
 
 - [Bank Negara Malaysia API](https://apikijangportal.bnm.gov.my/openapi)
-- [Open Exchange Rate](http://openexchangerates.org)
+- [Open Exchange Rate](https://openexchangerates.org)
 
 However, you may opt to define your own conversion rate instead of using the automated currency exchange rate.
 
