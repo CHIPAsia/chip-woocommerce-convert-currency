@@ -125,6 +125,11 @@ jobs:
           name: chip-woo-convert-currency-build
           path: ./build
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
       - name: Run Plugin Check
         uses: wordpress/plugin-check-action@v1
         with:
