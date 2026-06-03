@@ -332,11 +332,11 @@ if ( file_exists( $autoloader ) ) {
 require_once dirname( __DIR__ ) . '/chip-woo-convert-currency.php';
 
 // Explicitly load provider classes (normally loaded conditionally).
-require_once dirname( __DIR__ ) . '/includes/BankNegaraMalaysia.php';
-require_once dirname( __DIR__ ) . '/includes/OpenExchangeRate.php';
+require_once dirname( __DIR__ ) . '/includes/class-chipbnmapi.php';
+require_once dirname( __DIR__ ) . '/includes/class-chipopenexchangerate.php';
 
 // Explicitly load admin settings (normally loaded only when is_admin()).
-require_once dirname( __DIR__ ) . '/includes/admin/currency-settings.php';
+require_once dirname( __DIR__ ) . '/includes/admin/class-currencysettings.php';
 
 // Trigger includes so all plugin classes are loaded.
 ChipWooConvertCurrency::get_instance();

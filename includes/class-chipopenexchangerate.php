@@ -77,9 +77,9 @@ class ChipOpenExchangeRate {
 		$rates = get_transient( 'wc_chip_amount_converter_oer' );
 
 		if ( false === $rates ) {
-			$base  = $woocommerce_currency;
-			$query = http_build_query( $this->get_query_params( $base ) );
-			$rates = wp_remote_retrieve_body( wp_safe_remote_get( self::URL . "?{$query}" ) );
+			$base        = $woocommerce_currency;
+			$query       = http_build_query( $this->get_query_params( $base ) );
+			$rates       = wp_remote_retrieve_body( wp_safe_remote_get( self::URL . "?{$query}" ) );
 			$check_rates = json_decode( $rates );
 
 			// Cache only on success.
@@ -101,9 +101,9 @@ class ChipOpenExchangeRate {
 	 */
 	private function get_query_params( $base = 'USD' ) {
 		return array(
-			'base'        => $base,
-			'symbols'     => 'MYR',
-			'app_id'      => $this->app_id,
+			'base'    => $base,
+			'symbols' => 'MYR',
+			'app_id'  => $this->app_id,
 		);
 	}
 

@@ -18,6 +18,11 @@
 	<rule ref="WordPress">
 	</rule>
 
+	<!-- Main plugin file uses plugin slug, not class-* naming. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/chip-woo-convert-currency.php</exclude-pattern>
+	</rule>
+
 	<!-- Set minimum supported PHP version -->
 	<config name="minimum_supported_wp_version" value="6.3"/>
 	<config name="testVersion" value="7.4-"/>

@@ -138,7 +138,7 @@ class ChipWooConvertCurrency {
 	public function includes() {
 		if ( is_admin() ) {
 			$includes_dir = plugin_dir_path( CHIP_WCC_FILE ) . 'includes/admin/';
-			include $includes_dir . 'currency-settings.php';
+			include $includes_dir . 'class-currencysettings.php';
 		}
 	}
 
@@ -213,8 +213,8 @@ class ChipWooConvertCurrency {
 	 * processing unsafe.
 	 *
 	 * @since 1.0.0
-	 * @param bool          $can_refund_order Whether the order can be refunded.
-	 * @param WC_Order      $order            Order object.
+	 * @param bool               $can_refund_order Whether the order can be refunded.
+	 * @param WC_Order           $order            Order object.
 	 * @param WC_Payment_Gateway $gateway     Payment gateway instance.
 	 * @return bool
 	 */
@@ -253,10 +253,10 @@ class ChipWooConvertCurrency {
 		if ( 'fixedrate' === $provider_option ) {
 			$this->provider = null;
 		} elseif ( 'oer' === $provider_option && get_option( 'wcc_oer_key' ) ) {
-			require_once 'includes/OpenExchangeRate.php';
+			require_once 'includes/class-chipopenexchangerate.php';
 			$this->provider = ChipOpenExchangeRate::get_instance( get_option( 'wcc_oer_key' ) );
 		} else {
-			require_once 'includes/BankNegaraMalaysia.php';
+			require_once 'includes/class-chipbnmapi.php';
 			$this->provider = ChipBNMAPI::get_instance();
 		}
 	}
@@ -297,7 +297,7 @@ class ChipWooConvertCurrency {
 	 * Convert purchase parameters to MYR.
 	 *
 	 * @since 1.0.0
-	 * @param array          $params  Purchase parameters.
+	 * @param array              $params  Purchase parameters.
 	 * @param WC_Payment_Gateway $gateway Payment gateway.
 	 * @return array
 	 * @throws Exception If conversion rate cannot be retrieved.
@@ -341,35 +341,205 @@ class ChipWooConvertCurrency {
 	 */
 	public function apply_base_currency( $currency ) {
 		if ( $this->provider instanceof ChipOpenExchangeRate ) {
-			array_push(
-				$currency,
-				'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN',
-				'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL',
-				'BSD', 'BTC', 'BTN', 'BWP', 'BYN', 'BZD', 'CAD', 'CDF', 'CHF', 'CLF',
-				'CLP', 'CNH', 'CNY', 'COP', 'CRC', 'CUC', 'CUP', 'CVE', 'CZK', 'DJF',
-				'DKK', 'DOP', 'DZD', 'EGP', 'ERN', 'ETB', 'EUR', 'FJD', 'FKP', 'GBP',
-				'GEL', 'GGP', 'GHS', 'GIP', 'GMD', 'GNF', 'GTQ', 'GYD', 'HKD', 'HNL',
-				'HRK', 'HTG', 'HUF', 'IDR', 'ILS', 'IMP', 'INR', 'IQD', 'IRR', 'ISK',
-				'JEP', 'JMD', 'JOD', 'JPY', 'KES', 'KGS', 'KHR', 'KMF', 'KPW', 'KRW',
-				'KWD', 'KYD', 'KZT', 'LAK', 'LBP', 'LKR', 'LRD', 'LSL', 'LYD', 'MAD',
-				'MDL', 'MGA', 'MKD', 'MMK', 'MNT', 'MOP', 'MRU', 'MUR', 'MVR', 'MWK',
-				'MXN', 'MYR', 'MZN', 'NAD', 'NGN', 'NIO', 'NOK', 'NPR', 'NZD', 'OMR',
-				'PAB', 'PEN', 'PGK', 'PHP', 'PKR', 'PLN', 'PYG', 'QAR', 'RON', 'RSD',
-				'RUB', 'RWF', 'SAR', 'SBD', 'SCR', 'SDG', 'SEK', 'SGD', 'SHP', 'SLL',
-				'SOS', 'SRD', 'SSP', 'STD', 'STN', 'SVC', 'SYP', 'SZL', 'THB', 'TJS',
-				'TMT', 'TND', 'TOP', 'TRY', 'TTD', 'TWD', 'TZS', 'UAH', 'UGX', 'USD',
-				'UYU', 'UZS', 'VES', 'VND', 'VUV', 'WST', 'XAF', 'XAG', 'XAU', 'XCD',
-				'XDR', 'XOF', 'XPD', 'XPF', 'XPT', 'YER', 'ZAR', 'ZMW', 'ZWL'
-			);
+			$currency[] = 'AED';
+			$currency[] = 'AFN';
+			$currency[] = 'ALL';
+			$currency[] = 'AMD';
+			$currency[] = 'ANG';
+			$currency[] = 'AOA';
+			$currency[] = 'ARS';
+			$currency[] = 'AUD';
+			$currency[] = 'AWG';
+			$currency[] = 'AZN';
+			$currency[] = 'BAM';
+			$currency[] = 'BBD';
+			$currency[] = 'BDT';
+			$currency[] = 'BGN';
+			$currency[] = 'BHD';
+			$currency[] = 'BIF';
+			$currency[] = 'BMD';
+			$currency[] = 'BND';
+			$currency[] = 'BOB';
+			$currency[] = 'BRL';
+			$currency[] = 'BSD';
+			$currency[] = 'BTC';
+			$currency[] = 'BTN';
+			$currency[] = 'BWP';
+			$currency[] = 'BYN';
+			$currency[] = 'BZD';
+			$currency[] = 'CAD';
+			$currency[] = 'CDF';
+			$currency[] = 'CHF';
+			$currency[] = 'CLF';
+			$currency[] = 'CLP';
+			$currency[] = 'CNH';
+			$currency[] = 'CNY';
+			$currency[] = 'COP';
+			$currency[] = 'CRC';
+			$currency[] = 'CUC';
+			$currency[] = 'CUP';
+			$currency[] = 'CVE';
+			$currency[] = 'CZK';
+			$currency[] = 'DJF';
+			$currency[] = 'DKK';
+			$currency[] = 'DOP';
+			$currency[] = 'DZD';
+			$currency[] = 'EGP';
+			$currency[] = 'ERN';
+			$currency[] = 'ETB';
+			$currency[] = 'EUR';
+			$currency[] = 'FJD';
+			$currency[] = 'FKP';
+			$currency[] = 'GBP';
+			$currency[] = 'GEL';
+			$currency[] = 'GGP';
+			$currency[] = 'GHS';
+			$currency[] = 'GIP';
+			$currency[] = 'GMD';
+			$currency[] = 'GNF';
+			$currency[] = 'GTQ';
+			$currency[] = 'GYD';
+			$currency[] = 'HKD';
+			$currency[] = 'HNL';
+			$currency[] = 'HRK';
+			$currency[] = 'HTG';
+			$currency[] = 'HUF';
+			$currency[] = 'IDR';
+			$currency[] = 'ILS';
+			$currency[] = 'IMP';
+			$currency[] = 'INR';
+			$currency[] = 'IQD';
+			$currency[] = 'IRR';
+			$currency[] = 'ISK';
+			$currency[] = 'JEP';
+			$currency[] = 'JMD';
+			$currency[] = 'JOD';
+			$currency[] = 'JPY';
+			$currency[] = 'KES';
+			$currency[] = 'KGS';
+			$currency[] = 'KHR';
+			$currency[] = 'KMF';
+			$currency[] = 'KPW';
+			$currency[] = 'KRW';
+			$currency[] = 'KWD';
+			$currency[] = 'KYD';
+			$currency[] = 'KZT';
+			$currency[] = 'LAK';
+			$currency[] = 'LBP';
+			$currency[] = 'LKR';
+			$currency[] = 'LRD';
+			$currency[] = 'LSL';
+			$currency[] = 'LYD';
+			$currency[] = 'MAD';
+			$currency[] = 'MDL';
+			$currency[] = 'MGA';
+			$currency[] = 'MKD';
+			$currency[] = 'MMK';
+			$currency[] = 'MNT';
+			$currency[] = 'MOP';
+			$currency[] = 'MRU';
+			$currency[] = 'MUR';
+			$currency[] = 'MVR';
+			$currency[] = 'MWK';
+			$currency[] = 'MXN';
+			$currency[] = 'MYR';
+			$currency[] = 'MZN';
+			$currency[] = 'NAD';
+			$currency[] = 'NGN';
+			$currency[] = 'NIO';
+			$currency[] = 'NOK';
+			$currency[] = 'NPR';
+			$currency[] = 'NZD';
+			$currency[] = 'OMR';
+			$currency[] = 'PAB';
+			$currency[] = 'PEN';
+			$currency[] = 'PGK';
+			$currency[] = 'PHP';
+			$currency[] = 'PKR';
+			$currency[] = 'PLN';
+			$currency[] = 'PYG';
+			$currency[] = 'QAR';
+			$currency[] = 'RON';
+			$currency[] = 'RSD';
+			$currency[] = 'RUB';
+			$currency[] = 'RWF';
+			$currency[] = 'SAR';
+			$currency[] = 'SBD';
+			$currency[] = 'SCR';
+			$currency[] = 'SDG';
+			$currency[] = 'SEK';
+			$currency[] = 'SGD';
+			$currency[] = 'SHP';
+			$currency[] = 'SLL';
+			$currency[] = 'SOS';
+			$currency[] = 'SRD';
+			$currency[] = 'SSP';
+			$currency[] = 'STD';
+			$currency[] = 'STN';
+			$currency[] = 'SVC';
+			$currency[] = 'SYP';
+			$currency[] = 'SZL';
+			$currency[] = 'THB';
+			$currency[] = 'TJS';
+			$currency[] = 'TMT';
+			$currency[] = 'TND';
+			$currency[] = 'TOP';
+			$currency[] = 'TRY';
+			$currency[] = 'TTD';
+			$currency[] = 'TWD';
+			$currency[] = 'TZS';
+			$currency[] = 'UAH';
+			$currency[] = 'UGX';
+			$currency[] = 'USD';
+			$currency[] = 'UYU';
+			$currency[] = 'UZS';
+			$currency[] = 'VES';
+			$currency[] = 'VND';
+			$currency[] = 'VUV';
+			$currency[] = 'WST';
+			$currency[] = 'XAF';
+			$currency[] = 'XAG';
+			$currency[] = 'XAU';
+			$currency[] = 'XCD';
+			$currency[] = 'XDR';
+			$currency[] = 'XOF';
+			$currency[] = 'XPD';
+			$currency[] = 'XPF';
+			$currency[] = 'XPT';
+			$currency[] = 'YER';
+			$currency[] = 'ZAR';
+			$currency[] = 'ZMW';
+			$currency[] = 'ZWL';
 		} elseif ( $this->provider instanceof ChipBNMAPI ) {
-			array_push(
-				$currency,
-				'JPY', 'AED', 'AUD', 'BND', 'CAD', 'CHF', 'CNY', 'EGP', 'EUR', 'GBP',
-				'HKD', 'IDR', 'INR', 'KHR', 'KRW', 'MMK', 'NPR', 'NZD', 'PHP', 'PKR',
-				'SAR', 'SGD', 'THB', 'TWD', 'USD', 'VND', 'SDR'
-			);
+			$currency[] = 'JPY';
+			$currency[] = 'AED';
+			$currency[] = 'AUD';
+			$currency[] = 'BND';
+			$currency[] = 'CAD';
+			$currency[] = 'CHF';
+			$currency[] = 'CNY';
+			$currency[] = 'EGP';
+			$currency[] = 'EUR';
+			$currency[] = 'GBP';
+			$currency[] = 'HKD';
+			$currency[] = 'IDR';
+			$currency[] = 'INR';
+			$currency[] = 'KHR';
+			$currency[] = 'KRW';
+			$currency[] = 'MMK';
+			$currency[] = 'NPR';
+			$currency[] = 'NZD';
+			$currency[] = 'PHP';
+			$currency[] = 'PKR';
+			$currency[] = 'SAR';
+			$currency[] = 'SGD';
+			$currency[] = 'THB';
+			$currency[] = 'TWD';
+			$currency[] = 'USD';
+			$currency[] = 'VND';
+			$currency[] = 'SDR';
 		} elseif ( null === $this->provider ) {
-			array_push( $currency, 'MYR' );
+			$currency[] = 'MYR';
 		}
 
 		return $currency;
