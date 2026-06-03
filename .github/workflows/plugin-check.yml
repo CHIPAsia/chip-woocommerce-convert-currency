@@ -102,6 +102,8 @@ jobs:
         run: |
           mkdir -p ci-build/chip-woo-convert-currency
           git archive HEAD | tar -x -C ci-build/chip-woo-convert-currency
+          # .wp-env.json is export-ignored but needed by plugin-check action to start wp-env.
+          cp .wp-env.json ci-build/chip-woo-convert-currency/
           echo "✅ Plugin prepared for check"
 
       - name: Upload plugin artifact
@@ -117,10 +119,6 @@ jobs:
     name: Plugin Check
     runs-on: ubuntu-latest
     needs: [php-compatibility, phpcs, phpunit, prepare-plugin]
-    # TODO: Re-enable strict checking once upstream is fixed.
-    # Blocked by https://github.com/WordPress/plugin-check-action/issues/579
-    # (wp-env silently fails to start on new ubuntu-24.04 runner images)
-    continue-on-error: true
 
     steps:
       - name: Download plugin artifact

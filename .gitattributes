@@ -34,3 +34,4 @@ phpcs.xml export-ignore
 # WordPress.org SVN export rules
 /tests/ export-ignore
 /docs/ export-ignore
+.wp-env.json export-ignore
