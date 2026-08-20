@@ -160,13 +160,10 @@ class ChipWooConvertCurrency {
 		$chip_ids = array( 'wc_gateway_chip', 'wc_gateway_chip_2', 'wc_gateway_chip_3', 'wc_gateway_chip_4', 'wc_gateway_chip_5', 'wc_gateway_chip_6' );
 
 		foreach ( $chip_ids as $chip_id ) {
-			// Legacy wc_ prefixed hooks for v1.x backward compatibility.
-			add_filter( "wc_{$chip_id}_purchase_params", array( $this, 'purchase_parameter' ), 10, 2 );
-			add_filter( "wc_{$chip_id}_supported_currencies", array( $this, 'apply_base_currency' ) );
-			add_filter( "wc_{$chip_id}_purchase_currency", array( $this, 'apply_myr_currency' ) );
-			add_filter( "wc_{$chip_id}_can_refund_order", array( $this, 'can_refund_order' ), 10, 3 );
-
-			// New chip_ prefixed hooks for v2.x compatibility.
+			// New chip_ prefixed hooks for v2.x compatibility. The legacy
+			// wc_ prefixed hooks are intentionally NOT registered: CHIP for
+			// WooCommerce 2.0+ fires _deprecated_hook() whenever a wc_ hook
+			// has listeners, spamming deprecation notices on every request.
 			add_filter( "chip_{$chip_id}_purchase_params", array( $this, 'purchase_parameter' ), 10, 2 );
 			add_filter( "chip_{$chip_id}_supported_currencies", array( $this, 'apply_base_currency' ) );
 			add_filter( "chip_{$chip_id}_purchase_currency", array( $this, 'apply_myr_currency' ) );
