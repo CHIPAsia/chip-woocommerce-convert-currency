@@ -3,7 +3,7 @@ Contributors: chipasia
 Tags: chip
 Requires at least: 6.3
 Tested up to: 7.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 Requires PHP: 7.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -18,10 +18,8 @@ Convert unsupported currency to MYR for CHIP for WooCommerce.
 
 == Changelog ==
 
-= 1.3.0 2026-06-03 =
-
-* Added - Support for v2.x gateway hooks with chip_ prefix
-* Added - WooCommerce Blocks compatibility for currency conversion
+= 1.3.1 2026-08-20 =
+* Fix - Remove legacy wc_ hook registrations to silence deprecation notices with CHIP for WooCommerce 2.x
 
 [See changelog for all versions](https://raw.githubusercontent.com/CHIPAsia/chip-woocommerce-convert-currency/main/changelog.txt).
 

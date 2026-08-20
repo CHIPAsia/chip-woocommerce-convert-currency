@@ -10,7 +10,7 @@
  * Plugin Name: CHIP Woo Convert Currency
  * Plugin URI: https://wordpress.org/plugins/chip-woo-convert-currency/
  * Description: Convert unsupported currency to MYR for CHIP for WooCommerce.
- * Version: 1.3.0
+ * Version: 1.3.1
  * Author: Chip In Sdn Bhd
  * Author URI: https://chip-in.asia
  * Requires PHP: 7.4
@@ -24,7 +24,7 @@
  * License URI: https://www.gnu.org/licenses/gpl-3.0.html
  */
 
-defined( 'CHIP_WCC_MODULE_VERSION' ) || define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.0' );
+defined( 'CHIP_WCC_MODULE_VERSION' ) || define( 'CHIP_WCC_MODULE_VERSION', 'v1.3.1' );
 defined( 'CHIP_WCC_FILE' ) || define( 'CHIP_WCC_FILE', __FILE__ );
 defined( 'CHIP_WCC_BASENAME' ) || define( 'CHIP_WCC_BASENAME', plugin_basename( CHIP_WCC_FILE ) );
 defined( 'CHIP_WCC_URL' ) || define( 'CHIP_WCC_URL', plugin_dir_url( CHIP_WCC_FILE ) );
