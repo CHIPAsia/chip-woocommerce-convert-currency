@@ -46,7 +46,7 @@ class ChipWooConvertCurrencyTest extends PHPUnit\Framework\TestCase {
 	 */
 	public function test_plugin_constant_defined() {
 		$this->assertTrue( defined( 'CHIP_WCC_MODULE_VERSION' ), 'CHIP_WCC_MODULE_VERSION should be defined.' );
-		$this->assertEquals( 'v1.3.0', constant( 'CHIP_WCC_MODULE_VERSION' ) );
+		$this->assertEquals( 'v1.3.1', constant( 'CHIP_WCC_MODULE_VERSION' ) );
 	}
 
 	/**
