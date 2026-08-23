@@ -186,8 +186,15 @@ class ChipWooConvertCurrency {
 	 * @param WC_Payment_Gateway $gateway     Payment gateway instance.
 	 * @return bool
 	 */
-	public function can_refund_order( $can_refund_order, $order, $gateway ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
-		return false;
+	public function can_refund_order( $can_refund_order, $order, $gateway ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed -- $gateway kept for filter signature compatibility.
+		// Only disable refunds for orders that used currency conversion
+		// (i.e. the order's currency is not MYR). MYR orders are refunded
+		// normally by the CHIP gateway.
+		if ( 'MYR' !== $order->get_currency() ) {
+			return false;
+		}
+
+		return $can_refund_order;
 	}
 
 	/**
