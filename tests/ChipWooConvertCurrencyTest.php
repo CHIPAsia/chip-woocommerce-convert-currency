@@ -78,12 +78,54 @@ class ChipWooConvertCurrencyTest extends PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * Test that can_refund_order always returns false.
+	 * Test that can_refund_order returns false for non-MYR (converted) orders.
 	 */
-	public function test_can_refund_order_returns_false() {
+	public function test_can_refund_order_returns_false_for_converted_order() {
 		$instance = $this->get_instance();
-		$result   = $instance->can_refund_order( true, null, null );
-		$this->assertFalse( $result, 'can_refund_order should always return false.' );
+		$order    = $this->mock_order( 'USD' );
+		$result   = $instance->can_refund_order( true, $order, null );
+		$this->assertFalse( $result, 'can_refund_order should return false for converted (non-MYR) orders.' );
+	}
+
+	/**
+	 * Test that can_refund_order preserves the incoming value for MYR orders.
+	 */
+	public function test_can_refund_order_preserves_value_for_myr_order() {
+		$instance = $this->get_instance();
+		$order    = $this->mock_order( 'MYR' );
+		$result   = $instance->can_refund_order( true, $order, null );
+		$this->assertTrue( $result, 'can_refund_order should preserve true for MYR orders.' );
+	}
+
+	/**
+	 * Build a minimal order stub exposing get_currency().
+	 *
+	 * @param string $currency Order currency.
+	 * @return object
+	 */
+	private function mock_order( $currency ) {
+		return new class( $currency ) {
+			/** @var string */
+			private $currency;
+
+			/**
+			 * Constructor.
+			 *
+			 * @param string $currency Order currency.
+			 */
+			public function __construct( $currency ) {
+				$this->currency = $currency;
+			}
+
+			/**
+			 * Return the order currency.
+			 *
+			 * @return string
+			 */
+			public function get_currency() {
+				return $this->currency;
+			}
+		};
 	}
 
 	/**
