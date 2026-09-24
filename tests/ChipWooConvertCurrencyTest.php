@@ -42,11 +42,47 @@ class ChipWooConvertCurrencyTest extends PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * Test that the main plugin constant is defined.
+	 * Test that the main plugin constant is defined and matches the plugin header.
+	 *
+	 * The version must not be hard-coded here: `scripts/bump-version.sh` updates
+	 * the header and the constant but knows nothing about this file, so a frozen
+	 * literal turns every version bump into a red build. The assertion below is
+	 * bump-proof - it checks the two places stay in sync, which is the property
+	 * that actually matters (a mismatch means the plugin tells WordPress one
+	 * version and its own code another).
 	 */
 	public function test_plugin_constant_defined() {
 		$this->assertTrue( defined( 'CHIP_WCC_MODULE_VERSION' ), 'CHIP_WCC_MODULE_VERSION should be defined.' );
-		$this->assertEquals( 'v1.3.1', constant( 'CHIP_WCC_MODULE_VERSION' ) );
+
+		$constant = constant( 'CHIP_WCC_MODULE_VERSION' );
+		$this->assertMatchesRegularExpression(
+			'/^v\d+\.\d+\.\d+$/',
+			$constant,
+			'CHIP_WCC_MODULE_VERSION should look like vX.Y.Z.'
+		);
+
+		$header = $this->read_plugin_header_version();
+		$this->assertSame(
+			$header,
+			ltrim( $constant, 'v' ),
+			'CHIP_WCC_MODULE_VERSION should match the plugin header Version (the constant carries a leading "v", the header does not).'
+		);
+	}
+
+	/**
+	 * Read the Version from the plugin file header.
+	 *
+	 * @return string Version as written in the header (e.g. "1.3.2").
+	 */
+	private function read_plugin_header_version(): string {
+		$source = (string) file_get_contents( dirname( __DIR__ ) . '/chip-woo-convert-currency.php' );
+		$this->assertSame(
+			1,
+			preg_match( '/^[ 	]*\*[ 	]+Version:[ 	]*([0-9]+\.[0-9]+\.[0-9]+)/m', $source, $matches ),
+			'The plugin header should declare a "Version: X.Y.Z" line.'
+		);
+
+		return $matches[1];
 	}
 
 	/**

@@ -113,9 +113,11 @@ if grep -q "^= ${NEW_VERSION} " changelog.txt; then
 else
     echo "📝 Adding changelog entry..."
     export AWK_ENTRY="$CHANGELOG_ENTRY"
+    # changelog.txt is newest-first, so the new entry goes ABOVE the previous
+    # release, not below it. Inserting after NR==2 instead files the newest
+    # version under the older one and the history reads backwards.
     awk '
-        NR==1 { print; next }
-        NR==2 { print; print ENVIRON["AWK_ENTRY"]; print ""; next }
+        NR==1 { print ENVIRON["AWK_ENTRY"]; print ""; print; next }
         { print }
     ' changelog.txt > changelog.txt.tmp
     mv changelog.txt.tmp changelog.txt
@@ -144,6 +146,27 @@ awk '
     { print }
 ' readme.txt > readme.txt.tmp
 mv readme.txt.tmp readme.txt
+
+# ─── Verify ───
+#
+# A bump is only done when the suite agrees. The version lives in four places
+# (header, constant, Stable tag, changelog) and the tests assert they agree, so
+# running them here catches a bump that missed one before it is committed - that
+# is exactly how a stale version assertion previously reached main and turned
+# every build red.
+
+echo "🧪 Running the test suite..."
+if [ -x vendor/bin/phpunit ]; then
+    if ! vendor/bin/phpunit; then
+        echo ""
+        echo "❌ Tests failed after bumping to ${NEW_VERSION}."
+        echo "   The version may not be consistent across all files. Review the diff:"
+        echo "     git diff"
+        exit 1
+    fi
+else
+    echo "⚠️  vendor/bin/phpunit not found - skipping tests. Run 'composer install' first."
+fi
 
 # ─── Stage changes ───
 
