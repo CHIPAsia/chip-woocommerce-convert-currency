@@ -103,6 +103,7 @@ CI runs on pushes and PRs to `main`:
 
 ## Important Notes
 
+- **`readme.txt` carries only the current release.** WordPress.org renders the changelog from `readme.txt`, so it must hold exactly one version entry; `changelog.txt` keeps the full history.
 - **Version consistency**: The plugin version appears in four places — the file header in `chip-woo-convert-currency.php`, `readme.txt` (`Stable tag:`), `changelog.txt`, and the `CHIP_WCC_MODULE_VERSION` constant. Keep them in sync when bumping versions. Use `scripts/bump-version.sh` to automate this.
 - **Error handling**: If rate fetching fails, `get_current_conversion()` throws an exception. This is intentional — it prevents buyers from paying an incorrect amount.
 - **Line endings**: `.gitattributes` enforces LF for `.php`, `.js`, `.css`, `.txt`, and `.md` files.
